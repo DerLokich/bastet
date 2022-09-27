@@ -3,6 +3,7 @@ package main
 import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log"
+	"time"
 )
 
 func main() {
@@ -28,26 +29,34 @@ func main() {
 			continue
 		}
 		UserName := update.Message.From.UserName
+		cmdmsg := update.Message.MessageID
 		// Create a new MessageConfig. We don't have text yet,
 		// so we leave it empty.
+		if update.Message.Command() == "me" {
+			//	msg.Text = "Надо бы удалить"
+			//	bot.Send(msg)
+			time.Sleep(1 * time.Second)
+			kill := tgbotapi.NewDeleteMessage(update.Message.Chat.ID, cmdmsg)
+			bot.Request(kill)
+		}
 		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
-		if UserName == "DerLokich" {
-			// Extract the command from the Message.
-			switch update.Message.Command() {
-			case "help":
-				msg.Text = "I understand /sayhi and /status."
-			case "sayhi":
-				msg.Text = "Hi :)"
-			case "getall":
-				msg.Text = UserName
-			case "status":
-				msg.Text = "I'm ok."
-			default:
-				msg.Text = "Должен убить всех человеков..."
-			}
+		//	if UserName == "DerLokic" {
+		// Extract the command from the Message.
+		switch update.Message.Command() {
+		case "help":
+			msg.Text = "I understand /sayhi and /status."
+		case "sayhi":
+			msg.Text = "Hi :)"
+		case "getall":
+			msg.Text = UserName
+		case "status":
+			msg.Text = "I'm ok."
+		default:
+			msg.Text = "Должен убить всех человеков..."
 		}
-		if _, err := bot.Send(msg); err != nil {
-			log.Panic(err)
-		}
+		//	}
+		//	if _, err := bot.Send(msg); err != nil {
+		//		log.Panic(err)
+		//	}
 	}
 }
