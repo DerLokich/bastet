@@ -40,7 +40,7 @@ func main() {
 			bot.Request(kill)
 		}
 		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
-		//	if UserName == "DerLokic" {
+		//	if UserName == "DerLokich" {
 		// Extract the command from the Message.
 		switch update.Message.Command() {
 		case "help":
