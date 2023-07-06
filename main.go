@@ -3,6 +3,7 @@ package main
 import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -18,7 +19,7 @@ func main() {
 	}
 
 	bot.Debug = true
-	Neib := ""
+	//Neib := ""
 	substr := "сосед"
 	Checker := 0
 	LastMention := time.Now()
@@ -40,7 +41,7 @@ func main() {
 					//Neib:= "Прошло %v с последнего упоминания слова 'сосед'. Количество упоминаний:%c"
 				}
 				//LastMention := CurrentTime
-				msg := tgbotapi.NewMessage(update.Message.Chat.ID, Neib)
+				msg := tgbotapi.NewMessage(update.Message.Chat.ID, strconv.Itoa(Checker))
 				bot.Send(msg)
 			}
 			//else {
