@@ -3,7 +3,6 @@ package main
 import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -13,16 +12,13 @@ func main() {
 	if err != nil {
 		log.Panic(err)
 	}
-	l, err := time.LoadLocation("Europe/Moscow")
-	if err != nil {
-		log.Panic(err)
-	}
 
 	bot.Debug = true
 	//Neib := ""
 	substr := "сосед"
 	Checker := 0
 	LastMention := time.Now()
+	//TimeDifference := time.Now()
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
 	u := tgbotapi.NewUpdate(0)
@@ -35,14 +31,12 @@ func main() {
 			log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 			if strings.Contains(strings.ToLower(messageText), substr) {
 				Checker++
-				//CurrentTime := time.Now()
-				if LastMention != time.Date(2000, 1, 1, 0, 0, 0, 0, l) {
-					//TimeDifference := time.Now().Sub(LastMention)
-					//Neib:= "Прошло %v с последнего упоминания слова 'сосед'. Количество упоминаний:%c"
+				if LastMention != time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC) {
+					TimeDifference := time.Now().Sub(LastMention)
+					msg := tgbotapi.NewMessage(update.Message.Chat.ID, TimeDifference.String())
+					bot.Send(msg)
+					LastMention = time.Now()
 				}
-				//LastMention := CurrentTime
-				msg := tgbotapi.NewMessage(update.Message.Chat.ID, strconv.Itoa(Checker))
-				bot.Send(msg)
 			}
 			//else {
 			//	msg := tgbotapi.NewMessage(update.Message.Chat.ID, "NOPE")
