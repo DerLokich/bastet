@@ -39,6 +39,10 @@ func main() {
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
 			msg.Text = "asdasdasd"
 			bot.Send(msg)
+		} else {
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
+			msg.Text = "NOPE"
+			bot.Send(msg)
 		}
 
 		if update.Message.Command() == "me" {
