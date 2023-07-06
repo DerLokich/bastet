@@ -14,7 +14,7 @@ func main() {
 	}
 	l, err := time.LoadLocation("Europe/Moscow")
 	if err != nil {
-		panic(err)
+		log.Panic(err)
 	}
 
 	bot.Debug = true
@@ -34,12 +34,12 @@ func main() {
 			log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 			if strings.Contains(strings.ToLower(messageText), substr) {
 				Checker++
-				CurrentTime := time.Now()
+				//CurrentTime := time.Now()
 				if LastMention != time.Date(2000, 1, 1, 0, 0, 0, 0, l) {
-					TimeDifference := time.Now().Sub(LastMention)
-					Neib, _, _ := "Прошло %v с последнего упоминания слова 'сосед'. Количество упоминаний:%c", TimeDifference, Checker
+					//TimeDifference := time.Now().Sub(LastMention)
+					//Neib:= "Прошло %v с последнего упоминания слова 'сосед'. Количество упоминаний:%c"
 				}
-				LastMention := CurrentTime
+				//LastMention := CurrentTime
 				msg := tgbotapi.NewMessage(update.Message.Chat.ID, Neib)
 				bot.Send(msg)
 			} else {
