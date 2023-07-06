@@ -33,7 +33,7 @@ func main() {
 				Checker++
 				if LastMention != time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC) {
 					TimeDifference := time.Since(LastMention)
-					msg := tgbotapi.NewMessage(update.Message.Chat.ID, TimeDifference.String()+" Киря пидор, не уследил")
+					msg := tgbotapi.NewMessage(update.Message.Chat.ID, TimeDifference.String()+", эх Киря, правду про тебя ребята говорили...")
 					bot.Send(msg)
 					LastMention = time.Now()
 				}
