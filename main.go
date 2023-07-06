@@ -3,6 +3,7 @@ package main
 import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log"
+	"strings"
 	"time"
 )
 
@@ -32,6 +33,14 @@ func main() {
 		cmdmsg := update.Message.MessageID
 		// Create a new MessageConfig. We don't have text yet,
 		// so we leave it empty.
+		messageText := update.Message.Text
+		substr := "сосед"
+		if strings.Contains(messageText, substr) {
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
+			msg.Text = "asdasdasd"
+			bot.Send(msg)
+		}
+
 		if update.Message.Command() == "me" {
 			//	msg.Text = "Надо бы удалить"
 			//	bot.Send(msg)
