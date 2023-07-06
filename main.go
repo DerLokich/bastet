@@ -25,7 +25,7 @@ func main() {
 		if update.Message != nil { // If we got a message
 			messageText := update.Message.Text
 			log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
-			if strings.Contains(messageText, substr) {
+			if strings.Contains(strings.ToLower(messageText), substr) {
 				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "YARRR!")
 				bot.Send(msg)
 			} else {
