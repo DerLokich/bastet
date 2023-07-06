@@ -12,9 +12,16 @@ func main() {
 	if err != nil {
 		log.Panic(err)
 	}
+	l, err := time.LoadLocation("Europe/Moscow")
+	if err != nil {
+		panic(err)
+	}
 
 	bot.Debug = true
+	Neib := ""
 	substr := "сосед"
+	Checker := 0
+	LastMention := time.Now()
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
 	u := tgbotapi.NewUpdate(0)
@@ -26,7 +33,14 @@ func main() {
 			messageText := update.Message.Text
 			log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 			if strings.Contains(strings.ToLower(messageText), substr) {
-				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "YARRR!")
+				Checker++
+				CurrentTime := time.Now()
+				if LastMention != time.Date(2000, 1, 1, 0, 0, 0, 0, l) {
+					TimeDifference := time.Now().Sub(LastMention)
+					Neib, _, _ := "Прошло %v с последнего упоминания слова 'сосед'. Количество упоминаний:%c", TimeDifference, Checker
+				}
+				LastMention := CurrentTime
+				msg := tgbotapi.NewMessage(update.Message.Chat.ID, Neib)
 				bot.Send(msg)
 			} else {
 				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "NOPE")
