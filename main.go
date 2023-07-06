@@ -22,9 +22,10 @@ func main() {
 
 	for update := range updates {
 		if update.Message != nil { // If we got a message
+			//messageText = update.Message.Text
 			log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "LALALA")
 			bot.Send(msg)
 		}
 		if update.Message == nil { // ignore any non-Message updates
@@ -35,8 +36,6 @@ func main() {
 		}
 		//UserName := update.Message.From.UserName
 		cmdmsg := update.Message.MessageID
-		// Create a new MessageConfig. We don't have text yet,
-		// so we leave it empty.
 		//messageText := update.Message.Text
 		//substr := "сосед"
 		//if strings.Contains(messageText, substr) {
