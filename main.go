@@ -3,6 +3,7 @@ package main
 import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log"
+	"strings"
 	"time"
 )
 
@@ -13,7 +14,7 @@ func main() {
 	}
 
 	bot.Debug = true
-
+	substr := "сосед"
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
 	u := tgbotapi.NewUpdate(0)
@@ -22,11 +23,15 @@ func main() {
 
 	for update := range updates {
 		if update.Message != nil { // If we got a message
-			//messageText = update.Message.Text
+			messageText := update.Message.Text
 			log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
-
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "LALALA")
-			bot.Send(msg)
+			if strings.Contains(messageText, substr) {
+				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "YARRR!")
+				bot.Send(msg)
+			} else {
+				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "NOPE")
+				bot.Send(msg)
+			}
 		}
 		if update.Message == nil { // ignore any non-Message updates
 			continue
