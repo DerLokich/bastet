@@ -42,10 +42,11 @@ func main() {
 				//LastMention := CurrentTime
 				msg := tgbotapi.NewMessage(update.Message.Chat.ID, Neib)
 				bot.Send(msg)
-			} else {
-				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "NOPE")
-				bot.Send(msg)
 			}
+			//else {
+			//	msg := tgbotapi.NewMessage(update.Message.Chat.ID, "NOPE")
+			//	bot.Send(msg)
+			//}
 		}
 		if update.Message == nil { // ignore any non-Message updates
 			continue
