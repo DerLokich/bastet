@@ -28,9 +28,7 @@ func main() {
 			log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
-			if strings.Contains(messageText, substr) {
-				bot.Send(msg)
-			}
+			bot.Send(msg)
 		}
 		if update.Message == nil { // ignore any non-Message updates
 			continue
