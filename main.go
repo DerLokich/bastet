@@ -36,8 +36,11 @@ func main() {
 					Neib := strconv.Itoa(int(TimeDifference)) + ", whoop whoop thats the sound of the police!"
 					msg := tgbotapi.NewMessage(update.Message.Chat.ID, Neib)
 					bot.Send(msg)
+					log.Println(TimeDifference)
+					log.Printf(LastMention.String())
 					LastMention = time.Now()
-					log.Printf("Дней без упоминания float в int: %v", Neib)
+					log.Printf(LastMention.String())
+					log.Printf(Neib)
 				}
 			}
 			//else {
