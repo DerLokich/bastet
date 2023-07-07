@@ -33,7 +33,7 @@ func main() {
 				if LastMention != time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC) {
 					TimeDifference := time.Since(LastMention).Hours() / 24
 					//Days := int(TimeDifference)
-					Neib := strconv.Itoa(int(TimeDifference)) + ", whoop whoop thats the sound of the police!"
+					Neib := strconv.Itoa(int(TimeDifference)) + " дней без соседей"
 					msg := tgbotapi.NewMessage(update.Message.Chat.ID, Neib)
 					bot.Send(msg)
 					log.Println(TimeDifference)
