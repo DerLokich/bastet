@@ -43,10 +43,11 @@ func main() {
 					log.Printf(LastMention.String())
 					log.Printf(Neib)
 				}
-			} else {
-				msg := tgbotapi.NewMessage(435809098, "NOPE")
-				bot.Send(msg)
 			}
+			//else {
+			//	msg := tgbotapi.NewMessage(435809098, "NOPE")
+			//	bot.Send(msg)
+			//}
 		}
 		if update.Message == nil { // ignore any non-Message updates
 			continue
