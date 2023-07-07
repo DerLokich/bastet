@@ -1,8 +1,9 @@
-package main
+package vars
 
 import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -31,12 +32,12 @@ func main() {
 				Checker++
 				if LastMention != time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC) {
 					TimeDifference := time.Since(LastMention).Hours() / 24
-					Days := int(TimeDifference)
-					var Neib = string(int(TimeDifference)) + ", whoop whoop thats the sound of the police!"
+					//Days := int(TimeDifference)
+					var Neib = strconv.Itoa(int(TimeDifference)) + ", whoop whoop thats the sound of the police!"
 					msg := tgbotapi.NewMessage(update.Message.Chat.ID, Neib)
 					bot.Send(msg)
 					LastMention = time.Now()
-					log.Printf("Дней без упоминания float в int: %v", Days)
+					log.Printf("Дней без упоминания float в int: %v", Neib)
 				}
 			}
 			//else {
