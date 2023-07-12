@@ -9,6 +9,22 @@ import (
 	"time"
 )
 
+func declOfNum(number int, titles []string) string {
+	if number < 0 {
+		number *= -1
+	}
+	cases := []int{2, 0, 1, 1, 1, 2}
+	var currentCase int
+	if number%100 > 4 && number%100 < 20 {
+		currentCase = 2
+	} else if number%10 < 5 {
+		currentCase = cases[number%10]
+	} else {
+		currentCase = cases[5]
+	}
+	return titles[currentCase]
+}
+
 func main() {
 	bot, err := tgbotapi.NewBotAPI(config.Token)
 	if err != nil {
@@ -17,6 +33,7 @@ func main() {
 
 	bot.Debug = true
 	substr := "сосед"
+	titles := []string{"день", "дня", "дней"}
 	Checker := 0
 	LastMention := time.Now()
 	log.Printf("Authorized on account %s", bot.Self.UserName)
@@ -34,7 +51,7 @@ func main() {
 				if LastMention != time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC) {
 					TimeDifference := time.Since(LastMention).Hours() / 24
 					//Days := int(TimeDifference)
-					Neib := strconv.Itoa(int(TimeDifference)) + " дней без соседей"
+					Neib := strconv.Itoa(int(TimeDifference)) + declOfNum(int(TimeDifference), titles) + " дней без соседей"
 					msg := tgbotapi.NewMessage(update.Message.Chat.ID, Neib)
 					bot.Send(msg)
 					log.Println(TimeDifference)
