@@ -54,11 +54,15 @@ func main() {
 					Neib := strconv.Itoa(int(TimeDifference)) + " " + declOfNum(int(TimeDifference), titles) + " без соседей"
 					msg := tgbotapi.NewMessage(update.Message.Chat.ID, Neib)
 					bot.Send(msg)
+					msg = tgbotapi.NewMessage(435809098, "Было: "+LastMention.String())
+					bot.Send(msg)
 					log.Println(TimeDifference)
 					log.Printf(LastMention.String())
 					LastMention = time.Now()
 					log.Printf(LastMention.String())
 					log.Printf(Neib)
+					msg = tgbotapi.NewMessage(435809098, "Стало: "+LastMention.String())
+					bot.Send(msg)
 				}
 			}
 			//else {
