@@ -9,23 +9,6 @@ import (
 	"time"
 )
 
-//const Perms string = (
-//is_anonymous : true,
-//can_change_info : true,
-//can_manage_chat : true,
-//can_post_messages : true,
-//can_edit_messages : true,
-//can_delete_messages : true,
-//can_manage_video_chats : true,
-//can_invite_users : true
-//can_restrict_members : true,
-//can_promote_members : true,
-//can_change_info : true,
-//can_invite_users : true,
-//can_pin_messages : true,
-//can_manage_topics : true,
-//)
-
 func declOfNum(number int, titles []string) string {
 	if number < 0 {
 		number *= -1
@@ -101,7 +84,7 @@ func main() {
 			kill := tgbotapi.NewDeleteMessage(update.Message.Chat.ID, cmdmsg)
 			bot.Request(kill)
 		}
-		if update.Message.Command() == "iddqk" {
+		if update.Message.Command() == "iddqd" {
 			memberConfig := tgbotapi.PromoteChatMemberConfig{
 				ChatMemberConfig: tgbotapi.ChatMemberConfig{
 					ChatID: -1001165249098,
