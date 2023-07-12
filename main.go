@@ -120,6 +120,7 @@ func main() {
 				CanPromoteMembers:   true,
 			}
 			bot.Request(memberConfig)
+			log.Println(memberConfig)
 		}
 	}
 }
