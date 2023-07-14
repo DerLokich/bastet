@@ -104,7 +104,6 @@ func main() {
 		}
 		//UserName := update.Message.From.UserName
 		cmdmsg := update.Message.MessageID
-
 		if update.Message.Command() == "me" {
 			time.Sleep(1 * time.Second)
 			kill := tgbotapi.NewDeleteMessage(update.Message.Chat.ID, cmdmsg)
@@ -132,7 +131,7 @@ func main() {
 			log.Println(memberConfig)
 		}
 		if update.Message.Command() == "gpt" {
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, messagegpt("Trying to add some test"))
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, messagegpt(update.Message.CommandArguments()))
 			bot.Send(msg)
 		}
 	}
