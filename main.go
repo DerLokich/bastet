@@ -2,7 +2,10 @@ package main
 
 import (
 	"BastetTetlegram/config"
+	"context"
+	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	openai "github.com/sashabaranov/go-openai"
 	"log"
 	"strconv"
 	"strings"
@@ -23,6 +26,29 @@ func declOfNum(number int, titles []string) string {
 		currentCase = cases[5]
 	}
 	return titles[currentCase]
+}
+
+func messagegpt(msg string) string {
+	client := openai.NewClient(config.GPTtoken)
+	resp, err := client.CreateChatCompletion(
+		context.Background(),
+		openai.ChatCompletionRequest{
+			Model: openai.GPT3Dot5Turbo,
+			Messages: []openai.ChatCompletionMessage{
+				{
+					Role:    openai.ChatMessageRoleUser,
+					Content: msg,
+				},
+			},
+		},
+	)
+
+	if err != nil {
+		fmt.Printf("ChatCompletion error: %v\n", err)
+		//return
+	}
+	fmt.Println(resp.Choices[0].Message.Content)
+	return resp.Choices[0].Message.Content
 }
 
 func main() {
@@ -104,6 +130,10 @@ func main() {
 			}
 			bot.Request(memberConfig)
 			log.Println(memberConfig)
+		}
+		if update.Message.Command() == "gpt" {
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, messagegpt("Trying to add some test"))
+			bot.Send(msg)
 		}
 	}
 }
