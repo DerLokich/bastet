@@ -30,24 +30,28 @@ func declOfNum(number int, titles []string) string {
 
 func messagegpt(msg string) string {
 	client := openai.NewClient(config.GPTtoken)
-	resp, err := client.CreateChatCompletion(
-		context.Background(),
-		openai.ChatCompletionRequest{
-			Model: openai.GPT3Dot5Turbo,
-			Messages: []openai.ChatCompletionMessage{
-				{
-					Role:    openai.ChatMessageRoleUser,
-					Content: msg,
-				},
+	req := openai.ChatCompletionRequest{
+		Model: openai.GPT3Dot5Turbo,
+		Messages: []openai.ChatCompletionMessage{
+			{
+				Role:    openai.ChatMessageRoleSystem,
+				Content: "you are a helpful chatbot",
 			},
 		},
-	)
+	}
 
+	req.Messages = append(req.Messages, openai.ChatCompletionMessage{
+		Role:    openai.ChatMessageRoleUser,
+		Content: msg,
+	})
+	resp, err := client.CreateChatCompletion(context.Background(), req)
 	if err != nil {
 		fmt.Printf("ChatCompletion error: %v\n", err)
 		//return
 	}
+
 	fmt.Println(resp.Choices[0].Message.Content)
+	req.Messages = append(req.Messages, resp.Choices[0].Message)
 	return resp.Choices[0].Message.Content
 }
 
