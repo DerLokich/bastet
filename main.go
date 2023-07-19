@@ -39,7 +39,7 @@ func main() {
 		Messages: []openai.ChatCompletionMessage{
 			{
 				Role:    openai.ChatMessageRoleSystem,
-				Content: "you are a helpful chatbot",
+				Content: "Temporary message for initialization",
 			},
 		},
 	}
@@ -129,6 +129,23 @@ func main() {
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, resp.Choices[0].Message.Content)
 			bot.Send(msg)
 			req.Messages = append(req.Messages, resp.Choices[0].Message)
+		}
+		if update.Message.Command() == "imagine" {
+			respUrl, err := client.CreateImage(
+				context.Background(),
+				openai.ImageRequest{
+					Prompt:         update.Message.CommandArguments(),
+					Size:           openai.CreateImageSize256x256,
+					ResponseFormat: openai.CreateImageResponseFormatURL,
+					N:              1,
+				},
+			)
+			if err != nil {
+				fmt.Printf("Image creation error: %v\n", err)
+				continue
+			}
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, respUrl.Data[0].URL)
+			bot.Send(msg)
 		}
 	}
 }
