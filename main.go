@@ -35,7 +35,7 @@ func messagegpt(msg string) string {
 		Messages: []openai.ChatCompletionMessage{
 			{
 				Role:    openai.ChatMessageRoleSystem,
-				Content: "you are a helpful chatbot",
+				Content: msg,
 			},
 		},
 	}
