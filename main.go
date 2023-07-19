@@ -28,39 +28,21 @@ func declOfNum(number int, titles []string) string {
 	return titles[currentCase]
 }
 
-func messagegpt(msg string) string {
+func main() {
+	bot, err := tgbotapi.NewBotAPI(config.Token)
+	if err != nil {
+		log.Panic(err)
+	}
 	client := openai.NewClient(config.GPTtoken)
 	req := openai.ChatCompletionRequest{
 		Model: openai.GPT3Dot5Turbo,
 		Messages: []openai.ChatCompletionMessage{
 			{
 				Role:    openai.ChatMessageRoleSystem,
-				Content: msg,
+				Content: "you are a helpful chatbot",
 			},
 		},
 	}
-
-	req.Messages = append(req.Messages, openai.ChatCompletionMessage{
-		Role:    openai.ChatMessageRoleUser,
-		Content: msg,
-	})
-	resp, err := client.CreateChatCompletion(context.Background(), req)
-	if err != nil {
-		fmt.Printf("ChatCompletion error: %v\n", err)
-		//return
-	}
-
-	fmt.Println(resp.Choices[0].Message.Content)
-	req.Messages = append(req.Messages, resp.Choices[0].Message)
-	return resp.Choices[0].Message.Content
-}
-
-func main() {
-	bot, err := tgbotapi.NewBotAPI(config.Token)
-	if err != nil {
-		log.Panic(err)
-	}
-
 	bot.Debug = true
 	substr := "сосед"
 	titles := []string{"день", "дня", "дней"}
@@ -135,8 +117,18 @@ func main() {
 			log.Println(memberConfig)
 		}
 		if update.Message.Command() == "gpt" {
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, messagegpt(update.Message.CommandArguments()))
+			req.Messages = append(req.Messages, openai.ChatCompletionMessage{
+				Role:    openai.ChatMessageRoleUser,
+				Content: update.Message.CommandArguments(),
+			})
+			resp, err := client.CreateChatCompletion(context.Background(), req)
+			if err != nil {
+				fmt.Printf("ChatCompletion error: %v\n", err)
+				continue
+			}
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, resp.Choices[0].Message.Content)
 			bot.Send(msg)
+			req.Messages = append(req.Messages, resp.Choices[0].Message)
 		}
 	}
 }
