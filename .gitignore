@@ -1,7 +1,7 @@
-# Binaries for programs and plugins
+# На всякий случай вычеркиваем лишние файлики
 *.exe
 *.exe~
 *.dll
 
-# Dependency directories (remove the comment below to include it)
+#Исключаем папку с конфигами от коварных глаз
 /config/
