@@ -35,7 +35,7 @@ func main() {
 	client := openai.NewClient(config.GPTtoken)
 	req := openai.ChatCompletionRequest{
 		Model:     openai.GPT3Dot5Turbo,
-		MaxTokens: 4096,
+		MaxTokens: 3072,
 		Messages: []openai.ChatCompletionMessage{
 			{
 				Role:    openai.ChatMessageRoleSystem,
