@@ -3,9 +3,8 @@ package main
 import (
 	"BastetTetlegram/config"
 	"context"
-	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
-	openai "github.com/sashabaranov/go-openai"
+	"github.com/sashabaranov/go-openai"
 	"log"
 	"strconv"
 	"strings"
@@ -123,7 +122,18 @@ func main() {
 			})
 			resp, err := client.CreateChatCompletion(context.Background(), req)
 			if err != nil {
-				fmt.Printf("ChatCompletion error: %v\n", err)
+				bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Я устала запоминать, обнуляюсь"))
+				req = openai.ChatCompletionRequest{
+					Model: openai.GPT3Dot5Turbo,
+					Messages: []openai.ChatCompletionMessage{
+						{
+							Role:    openai.ChatMessageRoleSystem,
+							Content: update.Message.CommandArguments(),
+						},
+					},
+				}
+				bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, resp.Choices[0].Message.Content))
+				log.Printf("ChatCompletion error: %v\n", err)
 				continue
 			}
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, resp.Choices[0].Message.Content)
@@ -141,7 +151,7 @@ func main() {
 				},
 			)
 			if err != nil {
-				fmt.Printf("Image creation error: %v\n", err)
+				log.Printf("Image creation error: %v\n", err)
 				continue
 			}
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, respUrl.Data[0].URL)
