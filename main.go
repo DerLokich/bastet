@@ -34,7 +34,8 @@ func main() {
 	}
 	client := openai.NewClient(config.GPTtoken)
 	req := openai.ChatCompletionRequest{
-		Model: openai.GPT3Dot5Turbo,
+		Model:     openai.GPT3Dot5Turbo,
+		MaxTokens: 4096,
 		Messages: []openai.ChatCompletionMessage{
 			{
 				Role:    openai.ChatMessageRoleSystem,
@@ -117,7 +118,6 @@ func main() {
 		}
 		if update.Message.Command() == "gpt" {
 			ctx := context.Background()
-			ctx, _ = context.WithTimeout(ctx, 30*time.Minute)
 			req.Messages = append(req.Messages, openai.ChatCompletionMessage{
 				Role:    openai.ChatMessageRoleUser,
 				Content: update.Message.CommandArguments(),
