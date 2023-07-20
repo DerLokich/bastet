@@ -117,6 +117,7 @@ func main() {
 		}
 		if update.Message.Command() == "gpt" {
 			ctx := context.Background()
+			ctx, _ = context.WithTimeout(ctx, 100*time.Millisecond)
 			req.Messages = append(req.Messages, openai.ChatCompletionMessage{
 				Role:    openai.ChatMessageRoleUser,
 				Content: update.Message.CommandArguments(),
@@ -124,7 +125,6 @@ func main() {
 			resp, err := client.CreateChatCompletion(ctx, req)
 			if err != nil {
 				bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Я устала запоминать, обнуляюсь"))
-				ctx.Done()
 				log.Printf("ChatCompletion error: %v\n", err)
 				continue
 			}
