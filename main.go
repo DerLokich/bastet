@@ -116,24 +116,17 @@ func main() {
 			log.Println(memberConfig)
 		}
 		if update.Message.Command() == "gpt" {
+			ctx := context.Background()
 			req.Messages = append(req.Messages, openai.ChatCompletionMessage{
 				Role:    openai.ChatMessageRoleUser,
 				Content: update.Message.CommandArguments(),
 			})
-			resp, err := client.CreateChatCompletion(context.Background(), req)
+			resp, err := client.CreateChatCompletion(ctx, req)
 			if err != nil {
 				bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Я устала запоминать, обнуляюсь"))
-				req = openai.ChatCompletionRequest{
-					Model: openai.GPT3Dot5Turbo,
-					Messages: []openai.ChatCompletionMessage{
-						{
-							Role:    openai.ChatMessageRoleSystem,
-							Content: update.Message.CommandArguments(),
-						},
-					},
-				}
+				ctx.Done()
 				log.Printf("ChatCompletion error: %v\n", err)
-				return
+				continue
 			}
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, resp.Choices[0].Message.Content)
 			bot.Send(msg)
