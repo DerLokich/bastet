@@ -134,7 +134,7 @@ func main() {
 				}
 				bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, resp.Choices[0].Message.Content))
 				log.Printf("ChatCompletion error: %v\n", err)
-				continue
+				return
 			}
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, resp.Choices[0].Message.Content)
 			bot.Send(msg)
