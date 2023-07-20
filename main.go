@@ -117,7 +117,7 @@ func main() {
 		}
 		if update.Message.Command() == "gpt" {
 			ctx := context.Background()
-			ctx, _ = context.WithTimeout(ctx, 3600*time.Millisecond)
+			ctx, _ = context.WithTimeout(ctx, 30*time.Minute)
 			req.Messages = append(req.Messages, openai.ChatCompletionMessage{
 				Role:    openai.ChatMessageRoleUser,
 				Content: update.Message.CommandArguments(),
