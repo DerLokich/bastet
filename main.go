@@ -122,10 +122,24 @@ func main() {
 				Role:    openai.ChatMessageRoleUser,
 				Content: update.Message.CommandArguments(),
 			})
+			// Создаем канал для отмены контекста (если понадобится)
+			ctx, cancel := context.WithCancel(ctx)
 			resp, err := client.CreateChatCompletion(ctx, req)
 			if err != nil {
-				bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Я устала запоминать, обнуляюсь"))
-				log.Printf("ChatCompletion error: %v\n", err)
+				// Проверяем, является ли ошибка ошибкой 400
+				apiErr, ok := err.(*openai.APIError)
+				if ok && apiErr.HTTPStatusCode == 400 {
+					// Обрабатываем ошибку 400
+					cancel()
+					errorDetails := apiErr.Error() // Получаем подробности ошибки
+					// Выполняем логирование или отправляем сообщение о возникшей ошибке
+					bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Ой, что-то пошло не так. Пожалуйста, попробуйте снова."))
+					log.Printf("Ошибка 400 при вызове CreateChatCompletion: %v\n", errorDetails)
+				} else {
+					// Если ошибка не является ошибкой 400, обрабатываем ее соответствующим образом
+					bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Я устала запоминать, обнуляюсь"))
+					log.Printf("Ошибка при вызове CreateChatCompletion: %v\n", err)
+				}
 				continue
 			}
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, resp.Choices[0].Message.Content)
