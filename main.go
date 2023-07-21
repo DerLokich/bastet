@@ -34,8 +34,7 @@ func main() {
 	}
 	client := openai.NewClient(config.GPTtoken)
 	req := openai.ChatCompletionRequest{
-		Model:     openai.GPT3Dot5Turbo,
-		MaxTokens: 3072,
+		Model: openai.GPT3Dot5Turbo,
 		Messages: []openai.ChatCompletionMessage{
 			{
 				Role:    openai.ChatMessageRoleSystem,
@@ -131,6 +130,15 @@ func main() {
 				if ok && apiErr.HTTPStatusCode == 400 {
 					// Обрабатываем ошибку 400
 					cancel()
+					req = openai.ChatCompletionRequest{
+						Model: openai.GPT3Dot5Turbo,
+						Messages: []openai.ChatCompletionMessage{
+							{
+								Role:    openai.ChatMessageRoleSystem,
+								Content: "Clear message",
+							},
+						},
+					}
 					errorDetails := apiErr.Error() // Получаем подробности ошибки
 					// Выполняем логирование или отправляем сообщение о возникшей ошибке
 					bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Ой, что-то пошло не так. Пожалуйста, попробуйте снова."))
