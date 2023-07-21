@@ -143,6 +143,7 @@ func main() {
 					// Выполняем логирование или отправляем сообщение о возникшей ошибке
 					bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Ой, что-то пошло не так. Пожалуйста, попробуйте снова."))
 					log.Printf("Ошибка 400 при вызове CreateChatCompletion: %v\n", errorDetails)
+					bot.Send(tgbotapi.NewMessage(435809098, errorDetails))
 				} else {
 					// Если ошибка не является ошибкой 400, обрабатываем ее соответствующим образом
 					bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Я устала запоминать, обнуляюсь"))
