@@ -49,10 +49,9 @@ func main() {
 	updates := bot.GetUpdatesChan(u)
 
 	for update := range updates {
-		if update.Message == nil || !update.Message.IsCommand() {
+		if update.Message == nil {
 			continue // Ignore any non-Message or non-command updates
 		}
-
 		messageText := update.Message.Text
 		log.Printf("[%s] %s", update.Message.From.UserName, messageText)
 		switch update.Message.Command() {
