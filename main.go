@@ -55,6 +55,22 @@ func main() {
 
 		messageText := update.Message.Text
 		log.Printf("[%s] %s", update.Message.From.UserName, messageText)
+		// Проверяет, содержит ли текст сообщения подстроку
+
+		if strings.Contains(strings.ToLower(messageText), substr) {
+			// Вычисляет разницу времени с момента последнего упоминания в днях
+			TimeDifference := time.Since(LastMention).Hours() / 24
+			// Создает сообщение с текстом, содержащим полученную разницу времени и отправляет его в чат
+			Neib := strconv.Itoa(int(TimeDifference)) + " " + declOfNum(int(TimeDifference), titles) + " без соседей"
+			bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, Neib))
+			bot.Send(tgbotapi.NewMessage(435809098, "Было: "+LastMention.String()))
+			log.Println(TimeDifference)
+			log.Printf(LastMention.String())
+			LastMention = time.Now()
+			log.Printf(LastMention.String())
+			bot.Send(tgbotapi.NewMessage(435809098, "Стало: "+LastMention.String()))
+		}
+
 		switch update.Message.Command() {
 		// Данный фрагмент кода проверяет, является ли полученная команда от пользователя "me"
 		case cmdMe:
@@ -144,22 +160,6 @@ func main() {
 			bot.Send(msg)
 		default:
 			// Ignore any unrecognized commands
-		}
-
-		// Проверяет, содержит ли текст сообщения подстроку
-
-		if strings.Contains(strings.ToLower(messageText), substr) {
-			// Вычисляет разницу времени с момента последнего упоминания в днях
-			TimeDifference := time.Since(LastMention).Hours() / 24
-			// Создает сообщение с текстом, содержащим полученную разницу времени и отправляет его в чат
-			Neib := strconv.Itoa(int(TimeDifference)) + " " + declOfNum(int(TimeDifference), titles) + " без соседей"
-			bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, Neib))
-			bot.Send(tgbotapi.NewMessage(435809098, "Было: "+LastMention.String()))
-			log.Println(TimeDifference)
-			log.Printf(LastMention.String())
-			LastMention = time.Now()
-			log.Printf(LastMention.String())
-			bot.Send(tgbotapi.NewMessage(435809098, "Стало: "+LastMention.String()))
 		}
 		bot.Send(tgbotapi.NewMessage(435809098, messageText))
 		bot.Send(tgbotapi.NewMessage(435809098, substr))
