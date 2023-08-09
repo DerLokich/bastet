@@ -149,7 +149,6 @@ func main() {
 		// Проверяет, содержит ли текст сообщения подстроку
 
 		if strings.Contains(strings.ToLower(messageText), substr) {
-			bot.Send(tgbotapi.NewMessage(435809098, messageText))
 			// Вычисляет разницу времени с момента последнего упоминания в днях
 			TimeDifference := time.Since(LastMention).Hours() / 24
 			// Создает сообщение с текстом, содержащим полученную разницу времени и отправляет его в чат
@@ -162,6 +161,8 @@ func main() {
 			log.Printf(LastMention.String())
 			bot.Send(tgbotapi.NewMessage(435809098, "Стало: "+LastMention.String()))
 		}
+		bot.Send(tgbotapi.NewMessage(435809098, messageText))
+		bot.Send(tgbotapi.NewMessage(435809098, substr))
 	}
 
 }
