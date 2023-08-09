@@ -55,7 +55,7 @@ func main() {
 
 		messageText := update.Message.Text
 		log.Printf("[%s] %s", update.Message.From.UserName, messageText)
-		bot.Send(tgbotapi.NewMessage(435809098, messageText))
+		bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, messageText))
 		switch update.Message.Command() {
 		// Данный фрагмент кода проверяет, является ли полученная команда от пользователя "me"
 		case cmdMe:
