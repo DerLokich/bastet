@@ -117,6 +117,7 @@ func main() {
 					// Если ошибка не является ошибкой 400, обрабатываем ее соответствующим образом
 					bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Я устала запоминать, обнуляюсь"))
 					log.Printf("Ошибка при вызове CreateChatCompletion: %v\n", err)
+
 				}
 				continue
 			}
