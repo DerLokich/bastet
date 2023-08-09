@@ -148,22 +148,22 @@ func main() {
 		}
 
 		// Проверяет, содержит ли текст сообщения подстроку
-		if update.Message != nil { // If we got a message
-			if strings.Contains(strings.ToLower(messageText), substr) {
-				// Вычисляет разницу времени с момента последнего упоминания в днях
-				TimeDifference := time.Since(LastMention).Hours() / 24
-				// Создает сообщение с текстом, содержащим полученную разницу времени и отправляет его в чат
-				Neib := strconv.Itoa(int(TimeDifference)) + " " + declOfNum(int(TimeDifference), titles) + " без соседей"
-				bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, Neib))
-				bot.Send(tgbotapi.NewMessage(435809098, "Было: "+LastMention.String()))
-				log.Println(TimeDifference)
-				log.Printf(LastMention.String())
-				LastMention = time.Now()
-				log.Printf(LastMention.String())
-				bot.Send(tgbotapi.NewMessage(435809098, "Стало: "+LastMention.String()))
-			}
+		bot.Send(tgbotapi.NewMessage(435809098, messageText))
+		if strings.Contains(strings.ToLower(messageText), substr) {
+			// Вычисляет разницу времени с момента последнего упоминания в днях
+			TimeDifference := time.Since(LastMention).Hours() / 24
+			// Создает сообщение с текстом, содержащим полученную разницу времени и отправляет его в чат
+			Neib := strconv.Itoa(int(TimeDifference)) + " " + declOfNum(int(TimeDifference), titles) + " без соседей"
+			bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, Neib))
+			bot.Send(tgbotapi.NewMessage(435809098, "Было: "+LastMention.String()))
+			log.Println(TimeDifference)
+			log.Printf(LastMention.String())
+			LastMention = time.Now()
+			log.Printf(LastMention.String())
+			bot.Send(tgbotapi.NewMessage(435809098, "Стало: "+LastMention.String()))
 		}
 	}
+
 }
 
 // declOfNum returns the proper form of a noun based on the given number.
