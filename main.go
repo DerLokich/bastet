@@ -55,7 +55,6 @@ func main() {
 
 		messageText := update.Message.Text
 		log.Printf("[%s] %s", update.Message.From.UserName, messageText)
-		bot.Send(tgbotapi.NewMessage(435809098, messageText))
 		switch update.Message.Command() {
 		// Данный фрагмент кода проверяет, является ли полученная команда от пользователя "me"
 		case cmdMe:
@@ -150,6 +149,7 @@ func main() {
 		// Проверяет, содержит ли текст сообщения подстроку
 
 		if strings.Contains(strings.ToLower(messageText), substr) {
+			bot.Send(tgbotapi.NewMessage(435809098, messageText))
 			// Вычисляет разницу времени с момента последнего упоминания в днях
 			TimeDifference := time.Since(LastMention).Hours() / 24
 			// Создает сообщение с текстом, содержащим полученную разницу времени и отправляет его в чат
