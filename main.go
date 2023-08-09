@@ -153,12 +153,10 @@ func main() {
 			// Создает сообщение с текстом, содержащим полученную разницу времени и отправляет его в чат
 			Neib := strconv.Itoa(int(TimeDifference)) + " " + declOfNum(int(TimeDifference), titles) + " без соседей"
 			bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, Neib))
-			bot.Send(tgbotapi.NewMessage(435809098, "Было: "+LastMention.String()))
 			log.Println(TimeDifference)
 			log.Printf(LastMention.String())
 			LastMention = time.Now()
 			log.Printf(LastMention.String())
-			bot.Send(tgbotapi.NewMessage(435809098, "Стало: "+LastMention.String()))
 		}
 	}
 
