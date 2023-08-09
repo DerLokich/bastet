@@ -52,23 +52,25 @@ func main() {
 		if update.Message == nil || !update.Message.IsCommand() {
 			continue // Ignore any non-Message or non-command updates
 		}
-
-		messageText := update.Message.Text
-		log.Printf("[%s] %s", update.Message.From.UserName, messageText)
-		// Проверяет, содержит ли текст сообщения подстроку
-
-		if strings.Contains(strings.ToLower(messageText), substr) {
-			// Вычисляет разницу времени с момента последнего упоминания в днях
-			TimeDifference := time.Since(LastMention).Hours() / 24
-			// Создает сообщение с текстом, содержащим полученную разницу времени и отправляет его в чат
-			Neib := strconv.Itoa(int(TimeDifference)) + " " + declOfNum(int(TimeDifference), titles) + " без соседей"
-			bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, Neib))
-			bot.Send(tgbotapi.NewMessage(435809098, "Было: "+LastMention.String()))
-			log.Println(TimeDifference)
-			log.Printf(LastMention.String())
-			LastMention = time.Now()
-			log.Printf(LastMention.String())
-			bot.Send(tgbotapi.NewMessage(435809098, "Стало: "+LastMention.String()))
+		if update.Message != nil { // If we got a message
+			messageText := update.Message.Text
+			log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
+			// Проверяет, содержит ли текст сообщения подстроку
+			if strings.Contains(strings.ToLower(messageText), substr) {
+				if LastMention != time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC) {
+					// Вычисляет разницу времени с момента последнего упоминания в днях
+					TimeDifference := time.Since(LastMention).Hours() / 24
+					// Создает сообщение с текстом, содержащим полученную разницу времени и отправляет его в чат
+					Neib := strconv.Itoa(int(TimeDifference)) + " " + declOfNum(int(TimeDifference), titles) + " без соседей"
+					bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, Neib))
+					bot.Send(tgbotapi.NewMessage(435809098, "Было: "+LastMention.String()))
+					log.Println(TimeDifference)
+					log.Printf(LastMention.String())
+					LastMention = time.Now()
+					log.Printf(LastMention.String())
+					bot.Send(tgbotapi.NewMessage(435809098, "Стало: "+LastMention.String()))
+				}
+			}
 		}
 
 		switch update.Message.Command() {
@@ -161,8 +163,7 @@ func main() {
 		default:
 			// Ignore any unrecognized commands
 		}
-		bot.Send(tgbotapi.NewMessage(435809098, messageText))
-		bot.Send(tgbotapi.NewMessage(435809098, substr))
+
 	}
 
 }
