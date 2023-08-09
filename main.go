@@ -53,7 +53,6 @@ func main() {
 			continue // Ignore any non-Message or non-command updates
 		}
 		messageText := update.Message.Text
-		log.Printf("[%s] %s", update.Message.From.UserName, messageText)
 		switch update.Message.Command() {
 		// Данный фрагмент кода проверяет, является ли полученная команда от пользователя "me"
 		case cmdMe:
