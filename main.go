@@ -160,8 +160,6 @@ func main() {
 			log.Printf(LastMention.String())
 			bot.Send(tgbotapi.NewMessage(435809098, "Стало: "+LastMention.String()))
 		}
-		bot.Send(tgbotapi.NewMessage(435809098, messageText))
-		bot.Send(tgbotapi.NewMessage(435809098, substr))
 	}
 
 }
