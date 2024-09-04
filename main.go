@@ -33,7 +33,8 @@ func main() {
 
 	client := openai.NewClient(config.GPTtoken)
 	req := openai.ChatCompletionRequest{
-		Model: openai.GPT3Dot5Turbo,
+		Temperature: 0.7,
+		Model:       openai.GPT4o,
 		Messages: []openai.ChatCompletionMessage{
 			{
 				Role:    openai.ChatMessageRoleSystem,
