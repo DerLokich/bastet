@@ -100,7 +100,7 @@ func main() {
 				if ok && apiErr.HTTPStatusCode == 400 {
 					cancel()
 					req = openai.ChatCompletionRequest{
-						Model: openai.GPT3Dot5Turbo,
+						Model: openai.GPT4o,
 						Messages: []openai.ChatCompletionMessage{
 							{
 								Role:    openai.ChatMessageRoleSystem,
