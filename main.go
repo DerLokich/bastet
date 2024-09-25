@@ -4,7 +4,8 @@ import (
 	"BastetTetlegram/config"
 	"context"
 	"fmt"
-	"github.com/BradPerbs/claude-go"
+	"github.com/anthropics/anthropic-sdk-go"
+	"github.com/anthropics/anthropic-sdk-go/option"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/sashabaranov/go-openai"
 	"log"
@@ -46,7 +47,7 @@ func main() {
 		},
 	}
 
-	ClaudeClient := claude.NewClient(config.ClaudeToken)
+	ClaudeClient := anthropic.NewClient(option.WithAPIKey(config.ClaudeToken))
 
 	LastMention := time.Now()
 
@@ -131,12 +132,18 @@ func main() {
 			req.Messages = append(req.Messages, resp.Choices[0].Message)
 
 		case cmdClaude:
-			response, err := ClaudeClient.SendPrompt(messageText)
+			response, err := ClaudeClient.Messages.New(context.TODO(), anthropic.MessageNewParams{
+				Model:     anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
+				MaxTokens: anthropic.F(int64(1024)),
+				Messages: anthropic.F([]anthropic.MessageParam{
+					anthropic.NewUserMessage(anthropic.NewTextBlock("What is a quaternion?")),
+				}),
+			})
 			if err != nil {
 				fmt.Println("Error:", err)
 				return
 			}
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, response)
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, response.Content[0].Text)
 			bot.Send(msg)
 
 		// Использует клиентскую функцию CreateImage для создания изображения на основе текстовой подсказки, предоставленной в аргументах команды
