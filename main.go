@@ -3,6 +3,8 @@ package main
 import (
 	"BastetTetlegram/config"
 	"context"
+	"fmt"
+	"github.com/BradPerbs/claude-go"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/sashabaranov/go-openai"
 	"log"
@@ -18,6 +20,7 @@ const (
 	cmdIDDQD   = "iddqd"
 	cmdGPT     = "gpt"
 	cmdImagine = "imagine"
+	cmdClaude  = "claude"
 )
 
 var titles = []string{"день", "дня", "дней"}
@@ -42,6 +45,8 @@ func main() {
 			},
 		},
 	}
+
+	ClaudeClient := claude.NewClient(config.ClaudeToken)
 
 	LastMention := time.Now()
 
@@ -124,6 +129,16 @@ func main() {
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, resp.Choices[0].Message.Content)
 			bot.Send(msg)
 			req.Messages = append(req.Messages, resp.Choices[0].Message)
+
+		case cmdClaude:
+			response, err := ClaudeClient.SendPrompt(messageText)
+			if err != nil {
+				fmt.Println("Error:", err)
+				return
+			}
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, response)
+			bot.Send(msg)
+
 		// Использует клиентскую функцию CreateImage для создания изображения на основе текстовой подсказки, предоставленной в аргументах команды
 		case cmdImagine:
 			respUrl, err := client.CreateImage(
