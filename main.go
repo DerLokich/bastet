@@ -71,7 +71,7 @@ func main() {
 		case cmdStart:
 			text := "Привет, **жирный текст** и *курсивный текст*."
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, text)
-			msg.ParseMode = "HTML"
+			msg.ParseMode = "Markdown"
 			bot.Send(msg)
 		case cmdIDDQD:
 			// Создается переменная, которая используется для установки прав доступа для определенного пользователя в чате
