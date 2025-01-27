@@ -22,7 +22,7 @@ const (
 	cmdGPT     = "gpt"
 	cmdImagine = "imagine"
 	cmdClaude  = "claude"
-	cmdStart   = "Start"
+	cmdStart   = "start"
 )
 
 var titles = []string{"день", "дня", "дней"}
@@ -69,8 +69,10 @@ func main() {
 			bot.Request(kill)
 		// Этот фрагмент кода позволяет боту устанавливать определенные права доступа для указанного пользователя в чате при получении команды "iddqd"
 		case cmdStart:
-			text := "Привет, <b>жирный текст</b> и <i>курсивный текст</i>."
-			bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, text))
+			text := "Привет, **жирный текст** и *курсивный текст*."
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, text)
+			msg.ParseMode = "MarkdownV2"
+			bot.Send(msg)
 		case cmdIDDQD:
 			// Создается переменная, которая используется для установки прав доступа для определенного пользователя в чате
 			memberConfig := tgbotapi.PromoteChatMemberConfig{
