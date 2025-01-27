@@ -69,9 +69,9 @@ func main() {
 			bot.Request(kill)
 		// Этот фрагмент кода позволяет боту устанавливать определенные права доступа для указанного пользователя в чате при получении команды "iddqd"
 		case cmdStart:
-			text := "Привет, **жирный текст** и *курсивный текст*."
+			text := "Привет и __underline__"
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, text)
-			msg.ParseMode = "Markdown"
+			msg.ParseMode = "MarkdownV2"
 			bot.Send(msg)
 		case cmdIDDQD:
 			// Создается переменная, которая используется для установки прав доступа для определенного пользователя в чате
