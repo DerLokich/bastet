@@ -155,7 +155,7 @@ func main() {
 
 			// Send the request and handle the response
 			ctx := context.Background()
-			response, err := client.CreateChatCompletion(ctx, request)
+			response, err := DSClient.CreateChatCompletion(ctx, request)
 			if err != nil {
 				log.Fatalf("error: %v", err)
 			}
