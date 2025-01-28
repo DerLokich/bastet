@@ -72,7 +72,7 @@ func (c *Client) Query(prompt string) (string, error) {
 	}
 
 	// Убедитесь, что заголовок Authorization правильно сформирован
-	req.Header.Set("Authorization", "Bearer "+c.APIKey)
+	req.Header.Set("Authorization", "Bearer "+config.DSToken)
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
