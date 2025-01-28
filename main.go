@@ -155,13 +155,9 @@ func main() {
 			bot.Request(kill)
 		// Этот фрагмент кода позволяет боту устанавливать определенные права доступа для указанного пользователя в чате при получении команды "iddqd"
 		case cmdStart:
-			text := "*Жирный текст*\n" +
-				"_Курсив_\n" +
-				"~Зачеркнутый текст	~\n" +
-				"`Моноширинный текст`\n" +
-				"[Ссылка](https://example.com)\n" +
-				"```\nМногострочный\nкод\n```"
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, text)
+			text := "Это *текст* с _символами_, которые нужно экранировать: () [] {} # + - = | > ~ ` . !"
+			escapedText := tgbotapi.EscapeText(tgbotapi.ModeMarkdownV2, text)
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, escapedText)
 			msg.ParseMode = "MarkdownV2"
 			bot.Send(msg)
 		case cmdIDDQD:
