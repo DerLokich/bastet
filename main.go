@@ -2,7 +2,9 @@ package main
 
 import (
 	"BastetTetlegram/config"
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/anthropics/anthropic-sdk-go"
 	"github.com/anthropics/anthropic-sdk-go/option"
@@ -11,6 +13,7 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/sashabaranov/go-openai"
 	"log"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
@@ -29,7 +32,86 @@ const (
 	cmdDeepSeek = "ds"
 )
 
-var titles = []string{"день", "дня", "дней"}
+var (
+	titles         = []string{"день", "дня", "дней"}
+	DeepseekAPIURL = "https://api.deepseek.com/v1/chat/completions"
+)
+
+// Client представляет клиент для работы с Deepseek API.
+type Client struct {
+	APIKey string
+	URL    string
+}
+
+// NewClient создает новый клиент Deepseek.
+func NewClient(apiKey string) *Client {
+	return &Client{
+		APIKey: apiKey,
+		URL:    DeepseekAPIURL,
+	}
+}
+
+// Query отправляет запрос к Deepseek API и возвращает ответ.
+func (c *Client) Query(prompt string) (string, error) {
+	requestBody := map[string]interface{}{
+		"model": "deepseek-chat", // Уточните модель
+		"messages": []map[string]string{
+			{
+				"role":    "user",
+				"content": prompt,
+			},
+		},
+	}
+
+	requestJSON, err := json.Marshal(requestBody)
+	if err != nil {
+		return "", fmt.Errorf("ошибка при маршалинге запроса: %v", err)
+	}
+
+	req, err := http.NewRequest("POST", c.URL, bytes.NewBuffer(requestJSON))
+	if err != nil {
+		return "", fmt.Errorf("ошибка при создании запроса: %v", err)
+	}
+
+	// Убедитесь, что заголовок Authorization правильно сформирован
+	req.Header.Set("Authorization", "Bearer "+c.APIKey)
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("ошибка при отправке запроса: %v", err)
+	}
+	defer resp.Body.Close()
+
+	// Проверка статуса ответа
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("ошибка API: %s", resp.Status)
+	}
+
+	var response map[string]interface{}
+	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+		return "", fmt.Errorf("ошибка при декодировании ответа: %v", err)
+	}
+
+	// Извлечение ответа (пример, уточните структуру ответа)
+	choices, ok := response["choices"].([]interface{})
+	if !ok || len(choices) == 0 {
+		return "", fmt.Errorf("пустой ответ от Deepseek API")
+	}
+
+	message, ok := choices[0].(map[string]interface{})["message"].(map[string]interface{})
+	if !ok {
+		return "", fmt.Errorf("неверный формат ответа")
+	}
+
+	content, ok := message["content"].(string)
+	if !ok {
+		return "", fmt.Errorf("неверный формат содержимого")
+	}
+
+	return content, nil
+}
 
 func main() {
 	//Создается экземпляр бота, используя токен, полученный из config.Token
@@ -56,7 +138,7 @@ func main() {
 
 	LastMention := time.Now()
 
-	DSClient := deepseek.NewClient(os.Getenv(config.DSToken))
+	DSClient := NewClient(os.Getenv(config.DSToken))
 
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
