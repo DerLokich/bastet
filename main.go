@@ -148,7 +148,7 @@ func main() {
 			ctx := context.Background()
 			messages := []deepseek.ChatCompletionMessage{{
 				Role:    constants.ChatMessageRoleUser,
-				Content: "What's the highest mountain in the world? One word response only.",
+				Content: update.Message.CommandArguments(),
 			}}
 
 			response1, err := DSCLient.CreateChatCompletion(ctx, &deepseek.ChatCompletionRequest{
@@ -163,26 +163,28 @@ func main() {
 				Role:    response1.Choices[0].Message.Role,
 				Content: response1.Choices[0].Message.Content,
 			})
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, response1.Choices[0].Message.Content)
+			bot.Send(msg)
 
 			fmt.Printf("Messages after Round 1: %+v\n", messages)
-
-			messages = append(messages, deepseek.ChatCompletionMessage{
-				Role:    constants.ChatMessageRoleUser,
-				Content: "What is the second?",
-			})
-
-			response2, err := DSCLient.CreateChatCompletion(ctx, &deepseek.ChatCompletionRequest{
-				Model:    deepseek.DeepSeekChat,
-				Messages: messages,
-			})
-			if err != nil {
-				log.Fatalf("Round 2 failed: %v", err)
-			}
-
-			fmt.Printf("Final messages: %+v\n", append(messages, deepseek.ChatCompletionMessage{
-				Role:    response2.Choices[0].Message.Role,
-				Content: response2.Choices[0].Message.Content,
-			}))
+			//
+			//messages = append(messages, deepseek.ChatCompletionMessage{
+			//	Role:    constants.ChatMessageRoleUser,
+			//	Content: "What is the second?",
+			//})
+			//
+			//response2, err := DSCLient.CreateChatCompletion(ctx, &deepseek.ChatCompletionRequest{
+			//	Model:    deepseek.DeepSeekChat,
+			//	Messages: messages,
+			//})
+			//if err != nil {
+			//	log.Fatalf("Round 2 failed: %v", err)
+			//}
+			//
+			//fmt.Printf("Final messages: %+v\n", append(messages, deepseek.ChatCompletionMessage{
+			//	Role:    response2.Choices[0].Message.Role,
+			//	Content: response2.Choices[0].Message.Content,
+			//}))
 		case cmdClaude:
 			response, err := ClaudeClient.Messages.New(context.TODO(), anthropic.MessageNewParams{
 				Model:     anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
