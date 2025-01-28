@@ -44,7 +44,7 @@ type Client struct {
 
 func escapeMarkdownV2(text string) string {
 	// Список специальных символов для MarkdownV2
-	specialChars := []string{"_", "[", "]", "(", ")", "~", "`", ">", "#", "+", "-", "=", "|", "{", "}", ".", "!"}
+	specialChars := []string{"_", "~", "`", ">", "#", "+", "-", "=", "|", "{", "}", ".", "!"}
 
 	// Заменяем каждый специальный символ на экранированный
 	for _, char := range specialChars {
