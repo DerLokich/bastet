@@ -145,6 +145,7 @@ func main() {
 			bot.Send(msg)
 			req.Messages = append(req.Messages, resp.Choices[0].Message)
 		case cmdDeepSeek:
+			log.Println(config.GPTtoken)
 			request := &deepseek.ChatCompletionRequest{
 				Model: deepseek.DeepSeekChat,
 				Messages: []deepseek.ChatCompletionMessage{
@@ -159,7 +160,7 @@ func main() {
 			if err != nil {
 				log.Fatalf("error: %v", err)
 			}
-			log.Println(config.GPTtoken)
+
 			// Print the response
 			log.Println("Response:", response.Choices[0].Message.Content)
 		case cmdClaude:
