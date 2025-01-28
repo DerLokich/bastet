@@ -159,9 +159,9 @@ func main() {
 			if err != nil {
 				log.Fatalf("error: %v", err)
 			}
-
+			log.Println(config.GPTtoken)
 			// Print the response
-			fmt.Println("Response:", response.Choices[0].Message.Content)
+			log.Println("Response:", response.Choices[0].Message.Content)
 		case cmdClaude:
 			response, err := ClaudeClient.Messages.New(context.TODO(), anthropic.MessageNewParams{
 				Model:     anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
