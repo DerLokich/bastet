@@ -145,7 +145,8 @@ func main() {
 			bot.Send(msg)
 			req.Messages = append(req.Messages, resp.Choices[0].Message)
 		case cmdDeepSeek:
-			log.Println(config.GPTtoken)
+			log.Println(config.DSToken)
+			log.Println(DSClient)
 			request := &deepseek.ChatCompletionRequest{
 				Model: deepseek.DeepSeekChat,
 				Messages: []deepseek.ChatCompletionMessage{
