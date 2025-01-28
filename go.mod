@@ -1,11 +1,10 @@
 module BastetTetlegram
 
-go 1.21
-
-toolchain go1.22.3
+go 1.23.3
 
 require (
 	github.com/anthropics/anthropic-sdk-go v0.1.0-alpha.1
+	github.com/cohesion-org/deepseek-go v1.0.1
 	github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1
 	github.com/sashabaranov/go-openai v1.30.3
 )

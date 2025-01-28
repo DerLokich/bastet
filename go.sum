@@ -1,5 +1,7 @@
 github.com/anthropics/anthropic-sdk-go v0.1.0-alpha.1 h1:hkXzwiRxqpeMUTrLIplM7HMPLbo8H6RISJP8VjoMv0M=
 github.com/anthropics/anthropic-sdk-go v0.1.0-alpha.1/go.mod h1:GJxtdOs9K4neo8Gg65CjJ7jNautmldGli5/OFNabOoo=
+github.com/cohesion-org/deepseek-go v1.0.1 h1:OxcCxjbFBwRj8/lQv78e82PT8EdHrl/+siHdH5DWZFM=
+github.com/cohesion-org/deepseek-go v1.0.1/go.mod h1:je2+GYTRsFGimyZNP4hpAcARQ7dcMaidT5YisexH0w0=
 github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1 h1:wG8n/XJQ07TmjbITcGiUaOtXxdrINDz1b0J1w0SzqDc=
 github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1/go.mod h1:A2S0CWkNylc2phvKXWBBdD3K0iGnDBGbzRpISP2zBl8=
 github.com/sashabaranov/go-openai v1.30.3 h1:TEdRP3otRXX2A7vLoU+kI5XpoSo7VUUlM/rEttUqgek=

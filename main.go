@@ -6,9 +6,12 @@ import (
 	"fmt"
 	"github.com/anthropics/anthropic-sdk-go"
 	"github.com/anthropics/anthropic-sdk-go/option"
+	deepseek "github.com/cohesion-org/deepseek-go"
+	"github.com/cohesion-org/deepseek-go/constants"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/sashabaranov/go-openai"
 	"log"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -17,12 +20,13 @@ import (
 const substr = "сосед"
 
 const (
-	cmdMe      = "me"
-	cmdIDDQD   = "iddqd"
-	cmdGPT     = "gpt"
-	cmdImagine = "imagine"
-	cmdClaude  = "claude"
-	cmdStart   = "start"
+	cmdMe       = "me"
+	cmdIDDQD    = "iddqd"
+	cmdGPT      = "gpt"
+	cmdImagine  = "imagine"
+	cmdClaude   = "claude"
+	cmdStart    = "start"
+	cmdDeepSeek = "ds"
 )
 
 var titles = []string{"день", "дня", "дней"}
@@ -51,6 +55,8 @@ func main() {
 	ClaudeClient := anthropic.NewClient(option.WithAPIKey(config.ClaudeToken))
 
 	LastMention := time.Now()
+
+	DSCLient := deepseek.NewClient(os.Getenv(config.DSToken))
 
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
@@ -138,7 +144,45 @@ func main() {
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, resp.Choices[0].Message.Content)
 			bot.Send(msg)
 			req.Messages = append(req.Messages, resp.Choices[0].Message)
+		case cmdDeepSeek:
+			ctx := context.Background()
+			messages := []deepseek.ChatCompletionMessage{{
+				Role:    constants.ChatMessageRoleUser,
+				Content: "What's the highest mountain in the world? One word response only.",
+			}}
 
+			response1, err := DSCLient.CreateChatCompletion(ctx, &deepseek.ChatCompletionRequest{
+				Model:    deepseek.DeepSeekChat,
+				Messages: messages,
+			})
+			if err != nil {
+				log.Fatalf("Round 1 failed: %v", err)
+			}
+
+			messages = append(messages, deepseek.ChatCompletionMessage{
+				Role:    response1.Choices[0].Message.Role,
+				Content: response1.Choices[0].Message.Content,
+			})
+
+			fmt.Printf("Messages after Round 1: %+v\n", messages)
+
+			messages = append(messages, deepseek.ChatCompletionMessage{
+				Role:    constants.ChatMessageRoleUser,
+				Content: "What is the second?",
+			})
+
+			response2, err := DSCLient.CreateChatCompletion(ctx, &deepseek.ChatCompletionRequest{
+				Model:    deepseek.DeepSeekChat,
+				Messages: messages,
+			})
+			if err != nil {
+				log.Fatalf("Round 2 failed: %v", err)
+			}
+
+			fmt.Printf("Final messages: %+v\n", append(messages, deepseek.ChatCompletionMessage{
+				Role:    response2.Choices[0].Message.Role,
+				Content: response2.Choices[0].Message.Content,
+			}))
 		case cmdClaude:
 			response, err := ClaudeClient.Messages.New(context.TODO(), anthropic.MessageNewParams{
 				Model:     anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
