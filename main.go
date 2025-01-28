@@ -150,7 +150,7 @@ func main() {
 				Role:    constants.ChatMessageRoleUser,
 				Content: update.Message.CommandArguments(),
 			}}
-			log.Printf("Вызываем ключ %v", os.Getenv(config.DSToken))
+			log.Printf("Вызываем ключ %v", config.DSToken)
 			response1, err := DSClient.CreateChatCompletion(ctx, &deepseek.ChatCompletionRequest{
 				Model:    deepseek.DeepSeekChat,
 				Messages: messages,
