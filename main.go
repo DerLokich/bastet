@@ -8,8 +8,6 @@ import (
 	"fmt"
 	"github.com/anthropics/anthropic-sdk-go"
 	"github.com/anthropics/anthropic-sdk-go/option"
-	deepseek "github.com/cohesion-org/deepseek-go"
-	constants "github.com/cohesion-org/deepseek-go/constants"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/sashabaranov/go-openai"
 	"log"
@@ -227,25 +225,18 @@ func main() {
 			bot.Send(msg)
 			req.Messages = append(req.Messages, resp.Choices[0].Message)
 		case cmdDeepSeek:
-			log.Println(config.DSToken)
-			log.Println(DSClient)
-			request := &deepseek.ChatCompletionRequest{
-				Model: deepseek.DeepSeekChat,
-				Messages: []deepseek.ChatCompletionMessage{
-					{Role: constants.ChatMessageRoleSystem, Content: "Answer every question using slang."},
-					{Role: constants.ChatMessageRoleUser, Content: "Which is the tallest mountain in the world?"},
-				},
-			}
+			log.Println("[%s] %s", update.Message.From.UserName, update.Message.Text)
 
-			// Send the request and handle the response
-			ctx := context.Background()
-			response, err := DSClient.CreateChatCompletion(ctx, request)
+			response, err := DSClient.Query(update.Message.Text)
 			if err != nil {
-				log.Fatalf("error: %v", err)
+				log.Printf("Ошибка при запросе к Deepseek: %v", err)
+				response = "Произошла ошибка при обработке вашего запроса."
 			}
 
 			// Print the response
-			log.Println("Response:", response.Choices[0].Message.Content)
+			log.Println("Response:", response)
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, response)
+			bot.Send(msg)
 		case cmdClaude:
 			response, err := ClaudeClient.Messages.New(context.TODO(), anthropic.MessageNewParams{
 				Model:     anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
