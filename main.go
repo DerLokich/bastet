@@ -56,7 +56,7 @@ func main() {
 
 	LastMention := time.Now()
 
-	DSCLient := deepseek.NewClient(os.Getenv(config.DSToken))
+	DSClient := deepseek.NewClient(os.Getenv(config.DSToken))
 
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
@@ -150,8 +150,8 @@ func main() {
 				Role:    constants.ChatMessageRoleUser,
 				Content: update.Message.CommandArguments(),
 			}}
-
-			response1, err := DSCLient.CreateChatCompletion(ctx, &deepseek.ChatCompletionRequest{
+			log.Printf("Вызываем ключ %v", DSClient)
+			response1, err := DSClient.CreateChatCompletion(ctx, &deepseek.ChatCompletionRequest{
 				Model:    deepseek.DeepSeekChat,
 				Messages: messages,
 			})
@@ -166,7 +166,7 @@ func main() {
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, response1.Choices[0].Message.Content)
 			bot.Send(msg)
 
-			fmt.Printf("Messages after Round 1: %+v\n", messages)
+			log.Printf("Messages after Round 1: %+v\n", messages)
 			//
 			//messages = append(messages, deepseek.ChatCompletionMessage{
 			//	Role:    constants.ChatMessageRoleUser,
