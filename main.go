@@ -299,7 +299,7 @@ func main() {
 				context.Background(),
 				openai.ImageRequest{
 					Prompt:         update.Message.CommandArguments(),
-					Size:           openai.CreateImageSize256x256,
+					Size:           openai.CreateImageSize512x512,
 					ResponseFormat: openai.CreateImageResponseFormatURL,
 					N:              1,
 				},
