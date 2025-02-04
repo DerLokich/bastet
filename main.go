@@ -241,7 +241,7 @@ func main() {
 				if ok && apiErr.HTTPStatusCode == 400 {
 					cancel()
 					req = openai.ChatCompletionRequest{
-						Model: openai.GPT4o,
+						Model: openai.GPT4oLatest,
 						Messages: []openai.ChatCompletionMessage{
 							{
 								Role:    openai.ChatMessageRoleSystem,
