@@ -2,17 +2,10 @@ package main
 
 import (
 	"BastetTetlegram/config"
-	"bytes"
 	"context"
-	"encoding/json"
-	"fmt"
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/option"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/sashabaranov/go-openai"
 	"log"
-	"net/http"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -21,26 +14,17 @@ import (
 const substr = "сосед"
 
 const (
-	cmdMe       = "me"
-	cmdIDDQD    = "iddqd"
-	cmdGPT      = "gpt"
-	cmdImagine  = "imagine"
-	cmdClaude   = "claude"
-	cmdStart    = "start"
-	cmdDeepSeek = "ds"
-	cmdHelp     = "help"
+	cmdMe      = "me"
+	cmdIDDQD   = "iddqd"
+	cmdGPT     = "gpt"
+	cmdImagine = "imagine"
+	cmdStart   = "start"
+	cmdHelp    = "help"
 )
 
 var (
-	titles         = []string{"день", "дня", "дней"}
-	DeepseekAPIURL = "https://api.deepseek.com/v1/chat/completions"
+	titles = []string{"день", "дня", "дней"}
 )
-
-// Client представляет клиент для работы с Deepseek API.
-type Client struct {
-	APIKey string
-	URL    string
-}
 
 func escapeMarkdownV2(text string) string {
 	// Список специальных символов для MarkdownV2
@@ -52,76 +36,6 @@ func escapeMarkdownV2(text string) string {
 	}
 
 	return text
-}
-
-// NewClient создает новый клиент Deepseek.
-func NewClient(apiKey string) *Client {
-	return &Client{
-		APIKey: apiKey,
-		URL:    DeepseekAPIURL,
-	}
-}
-
-// Query отправляет запрос к Deepseek API и возвращает ответ.
-func (c *Client) Query(prompt string) (string, error) {
-	requestBody := map[string]interface{}{
-		"model": "deepseek-chat", // Уточните модель
-		"messages": []map[string]string{
-			{
-				"role":    "user",
-				"content": prompt,
-			},
-		},
-	}
-
-	requestJSON, err := json.Marshal(requestBody)
-	if err != nil {
-		return "", fmt.Errorf("ошибка при маршалинге запроса: %v", err)
-	}
-
-	req, err := http.NewRequest("POST", c.URL, bytes.NewBuffer(requestJSON))
-	if err != nil {
-		return "", fmt.Errorf("ошибка при создании запроса: %v", err)
-	}
-
-	// Убедитесь, что заголовок Authorization правильно сформирован
-	req.Header.Set("Authorization", "Bearer "+config.DSToken)
-	req.Header.Set("Content-Type", "application/json")
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return "", fmt.Errorf("ошибка при отправке запроса: %v", err)
-	}
-	defer resp.Body.Close()
-
-	// Проверка статуса ответа
-	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("ошибка API: %s", resp.Status)
-	}
-
-	var response map[string]interface{}
-	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-		return "", fmt.Errorf("ошибка при декодировании ответа: %v", err)
-	}
-
-	// Извлечение ответа (пример, уточните структуру ответа)
-	choices, ok := response["choices"].([]interface{})
-	if !ok || len(choices) == 0 {
-		return "", fmt.Errorf("пустой ответ от Deepseek API")
-	}
-
-	message, ok := choices[0].(map[string]interface{})["message"].(map[string]interface{})
-	if !ok {
-		return "", fmt.Errorf("неверный формат ответа")
-	}
-
-	content, ok := message["content"].(string)
-	if !ok {
-		return "", fmt.Errorf("неверный формат содержимого")
-	}
-
-	return content, nil
 }
 
 func main() {
@@ -145,11 +59,7 @@ func main() {
 		},
 	}
 
-	ClaudeClient := anthropic.NewClient(option.WithAPIKey(config.ClaudeToken))
-
 	LastMention := time.Now()
-
-	DSClient := NewClient(os.Getenv(config.DSToken))
 
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
@@ -172,14 +82,12 @@ func main() {
 				"Я умею:\n" +
 				"🤖 Генерировать тексты с помощью *ChatGPT*.\n" +
 				"🎨 Создавать изображения с помощью *DALL-E*.\n" +
-				"🚀 *Скоро* я научусь работать с *Deepseek* для еще более крутых задач!\n\n" +
 				"*Как мной пользоваться?*\n" +
 				"1. Для генерации текста просто используй команду /gpt, например:\n" +
 				"   - \"/gpt Напиши рассказ про космос\"\n" +
 				"   - \"/gpt Придумай идею для стартапа\"\n" +
 				"2. Для создания изображения используй команду `/imagine` и опиши, что ты хочешь увидеть, например:\n" +
 				"   - \"/imagine Космический корабль в стиле киберпанк\"\n" +
-				"3. *Deepseek* пока в разработке, но скоро я смогу предложить еще больше возможностей!\n\n" +
 				"*Начнем? Просто напиши мне, что тебе нужно!*\n\n" +
 				"*P.S.* Если есть вопросы, используй команду `/help` 😊"
 			escapedText := escapeMarkdownV2(originalText)
@@ -193,8 +101,7 @@ func main() {
 			originalText := "Привет👋! Это свободная разработка. По вопросам обращайтесь к [разработчику бота](tg://user?id=435809098)  📬.\n" +
 				" Спасибо за вашу обратную связь😊!\n\nБазовые команды:\n" +
 				"- `/gpt` - Получите текстовые ответы на ваши вопросы с помощью *GPT4o*.\n" +
-				"- `/imagine` - Создайте изображения на основе вашего описания.\n" +
-				"- `/ds` - Разрабатывается система для запросов в *DeepSeek V3*\n"
+				"- `/imagine` - Создайте изображения на основе вашего описания.\n"
 			escapedText := escapeMarkdownV2(originalText)
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, escapedText)
 			msg.ParseMode = "MarkdownV2"
@@ -265,33 +172,6 @@ func main() {
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, resp.Choices[0].Message.Content)
 			bot.Send(msg)
 			req.Messages = append(req.Messages, resp.Choices[0].Message)
-		case cmdDeepSeek:
-			log.Println("[%s] %s", update.Message.From.UserName, update.Message.Text)
-
-			response, err := DSClient.Query(update.Message.Text)
-			if err != nil {
-				log.Printf("Ошибка при запросе к Deepseek: %v", err)
-				response = "Произошла ошибка при обработке вашего запроса."
-			}
-
-			// Print the response
-			log.Println("Response:", response)
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, response)
-			bot.Send(msg)
-		case cmdClaude:
-			response, err := ClaudeClient.Messages.New(context.TODO(), anthropic.MessageNewParams{
-				Model:     anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
-				MaxTokens: anthropic.F(int64(1024)),
-				Messages: anthropic.F([]anthropic.MessageParam{
-					anthropic.NewUserMessage(anthropic.NewTextBlock("What is a quaternion?")),
-				}),
-			})
-			if err != nil {
-				fmt.Println("Error:", err)
-				return
-			}
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, response.Content[0].Text)
-			bot.Send(msg)
 
 		// Использует клиентскую функцию CreateImage для создания изображения на основе текстовой подсказки, предоставленной в аргументах команды
 		case cmdImagine:
