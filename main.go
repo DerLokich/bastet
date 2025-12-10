@@ -198,15 +198,13 @@ func main() {
 			}
 		// --- НОВАЯ КОМАНДА /q ---
 		case cmdQuote:
-			// Добавим логирование начала обработки команды
 			log.Printf("Начата обработка команды /q для чата %d", update.Message.Chat.ID)
 
 			phrases, err := readPhrasesFromFile(phrasesFile)
 			if err != nil {
 				log.Printf("Ошибка при чтении файла фраз в команде /q: %v", err)
-				// Отправляем сообщение пользователю о проблеме
 				bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Не удалось получить цитату. Файл фраз недоступен."))
-				continue // Прерываем выполнение текущего цикла для этой команды
+				continue
 			}
 
 			if len(phrases) == 0 {
@@ -216,10 +214,11 @@ func main() {
 			}
 
 			randomPhrase := getRandomPhrase(phrases)
-			log.Printf("Выбрана случайная фраза: '%s'", randomPhrase) // Логируем выбранную фразу
+			log.Printf("Выбрана случайная фраза: '%s'", randomPhrase)
 
 			escapedPhrase := escapeMarkdownV2(randomPhrase)
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, escapedPhrase)
+			msg.ParseMode = "MarkdownV2" // <-- Добавляем эту строку
 			_, err = bot.Send(msg)
 			if err != nil {
 				log.Printf("Ошибка при отправке цитаты в команде /q: %v", err)
