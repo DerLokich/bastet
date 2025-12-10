@@ -7,7 +7,7 @@ import (
 	"encoding/json"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/sashabaranov/go-openai"
-	"io/ioutil" // Добавляем ioutil для ReadFile
+	"io/ioutil"
 	"log"
 	"math/rand"
 	"os"
@@ -20,7 +20,7 @@ var globalRand = rand.New(rand.NewSource(time.Now().UnixNano()))
 
 const substr = "сосед"
 const phrasesFile = "config/phrases.txt"
-const toastsFile = "config/toasts.txt" // Путь к файлу с тостами
+const toastsFile = "config/toasts.txt"
 const lastMentionFile = "last_mention.json"
 
 const (
@@ -31,7 +31,7 @@ const (
 	cmdStart   = "start"
 	cmdHelp    = "help"
 	cmdQuote   = "q"
-	cmdToast   = "toast" // Новая команда
+	cmdToast   = "toast"
 )
 
 var (
@@ -46,7 +46,6 @@ func escapeMarkdownV2(text string) string {
 	// Список специальных символов для MarkdownV2, требующих экранирования
 	// Согласно https://core.telegram.org/bots/api#formatting-options
 	// Специальные символы: _, *, [, ], (, ), ~, ` (апостроф), >, #, +, -, =, |, {, }, ., !
-	// Пользовательская логика показала, что '.' также может требовать экранирования в сочетании с другими символами.
 	// Для надежности экранируем все.
 	specialChars := []string{"_", "*", "~", "`", ">", "#", "+", "-", "=", "|", "{", "}", ".", "!", "[", "]", "(", ")"}
 
@@ -55,6 +54,20 @@ func escapeMarkdownV2(text string) string {
 	}
 
 	return text
+}
+
+// Слайс праздничных эмодзи
+var festiveEmojis = []string{
+	"🥂", "🍾", "🍷", "🍸", "🍺", "🍻", "🥂", "🎉", "🎊", "🥳", "✨", "🌟", "💫", "🔥", "❤️", "💖", "💕", "🌹", "💐", "🎁", "🎀", "🎊", "🎉", "🥂", "-toast-emoji-",
+	// Добавьте сюда любые другие эмодзи, которые вы считаете праздничными
+}
+
+// getRandomEmoji возвращает случайное эмодзи из слайса festiveEmojis
+func getRandomEmoji() string {
+	if len(festiveEmojis) == 0 {
+		return "" // На всякий случай, если слайс пуст
+	}
+	return festiveEmojis[globalRand.Intn(len(festiveEmojis))]
 }
 
 // readPhrasesFromFile читает фразы из файла
@@ -100,17 +113,13 @@ func readToastsFromFile(filename string) ([]string, error) {
 		return nil, err
 	}
 
-	// Преобразуем содержимое в строку
 	text := string(content)
-
-	// Разделяем по "* * *"
-	// TrimSpace удаляет пробелы и символы новой строки в начале и конце, чтобы избежать пустых элементов
 	parts := strings.Split(text, "* * *")
 
 	var toasts []string
 	for _, part := range parts {
 		trimmedPart := strings.TrimSpace(part)
-		if trimmedPart != "" { // Пропускаем пустые части
+		if trimmedPart != "" {
 			toasts = append(toasts, trimmedPart)
 		}
 	}
@@ -275,7 +284,7 @@ func main() {
 				"- `/gpt` - Получите текстовые ответы на ваши вопросы с помощью *GPT4o*.\n" +
 				"- `/imagine` - Создайте изображения на основе вашего описания.\n" +
 				"- `/q` - Получите случайную цитату.\n" +
-				"- `/toast` - Получите случайный тост.\n" // Добавляем информацию о новой команде
+				"- `/toast` - Получите случайный тост.\n"
 			escapedText := escapeMarkdownV2(originalText)
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, escapedText)
 			msg.ParseMode = "MarkdownV2"
@@ -355,14 +364,21 @@ func main() {
 			randomToast := getRandomToast(toasts)
 			log.Printf("Выбран случайный тост: '%s'", randomToast)
 
+			randomEmoji := getRandomEmoji()
+			log.Printf("Выбрано случайное эмодзи: '%s'", randomEmoji)
+
+			// Формируем сообщение: эмодзи + тост + эмодзи
+			// Экранируем только тост, эмодзи не требуют экранирования
 			escapedToast := escapeMarkdownV2(randomToast)
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, escapedToast)
+			finalMessage := randomEmoji + " " + escapedToast + " " + randomEmoji
+
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, finalMessage)
 			msg.ParseMode = "MarkdownV2"
 			_, err = bot.Send(msg)
 			if err != nil {
 				log.Printf("Ошибка при отправке тоста в команде /toast: %v", err)
 			} else {
-				log.Printf("Тост успешно отправлен в чат %d", update.Message.Chat.ID)
+				log.Printf("Тост с эмодзи успешно отправлен в чат %d", update.Message.Chat.ID)
 			}
 		// --- КОНЕЦ НОВОЙ КОМАНДЫ ---
 		case cmdGPT:
