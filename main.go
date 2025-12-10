@@ -4,6 +4,7 @@ import (
 	"BastetTetlegram/config"
 	"bufio"
 	"context"
+	"encoding/json" // Добавляем пакет для работы с JSON
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/sashabaranov/go-openai"
 	"log"
@@ -17,7 +18,8 @@ import (
 var globalRand = rand.New(rand.NewSource(time.Now().UnixNano()))
 
 const substr = "сосед"
-const phrasesFile = "config/phrases.txt" // Путь к файлу с фразами
+const phrasesFile = "config/phrases.txt"
+const lastMentionFile = "last_mention.json" // Файл для сохранения времени
 
 const (
 	cmdMe      = "me"
@@ -26,12 +28,17 @@ const (
 	cmdImagine = "imagine"
 	cmdStart   = "start"
 	cmdHelp    = "help"
-	cmdQuote   = "q" // Новая команда
+	cmdQuote   = "q"
 )
 
 var (
 	titles = []string{"день", "дня", "дней"}
 )
+
+// Структура для хранения времени в JSON
+type LastMentionData struct {
+	LastMention time.Time `json:"last_mention"`
+}
 
 func escapeMarkdownV2(text string) string {
 	specialChars := []string{"_", "~", "`", ">", "#", "+", "-", "=", "|", "{", "}", ".", "!"}
@@ -41,14 +48,62 @@ func escapeMarkdownV2(text string) string {
 	return text
 }
 
-// readPhrasesFromFile читает фразы из файла
-func readPhrasesFromFile(filename string) ([]string, error) {
-	// Добавим логирование пути к файлу
-	log.Printf("Попытка чтения файла фраз: %s", filename)
-
+// loadLastMentionFromFile загружает время из файла
+func loadLastMentionFromFile(filename string) (time.Time, error) {
+	log.Printf("Попытка загрузки времени из файла: %s", filename)
 	file, err := os.Open(filename)
 	if err != nil {
-		// Логируем ошибку открытия файла
+		// Если файл не найден, это нормально для первого запуска
+		if os.IsNotExist(err) {
+			log.Printf("Файл %s не найден, будет создан при следующем обновлении.", filename)
+			return time.Time{}, err // Возвращаем zero time и ошибку os.IsNotExist
+		}
+		// Другие ошибки чтения файла
+		log.Printf("Ошибка открытия файла: %v", err)
+		return time.Time{}, err
+	}
+	defer file.Close()
+
+	var data LastMentionData
+	decoder := json.NewDecoder(file)
+	err = decoder.Decode(&data)
+	if err != nil {
+		log.Printf("Ошибка декодирования JSON из файла: %v", err)
+		return time.Time{}, err
+	}
+
+	log.Printf("Время успешно загружено из файла: %v", data.LastMention)
+	return data.LastMention, nil
+}
+
+// saveLastMentionToFile сохраняет время в файл
+func saveLastMentionToFile(filename string, lastMention time.Time) error {
+	log.Printf("Сохранение времени в файл: %s, время: %v", filename, lastMention)
+	data := LastMentionData{LastMention: lastMention}
+
+	file, err := os.Create(filename)
+	if err != nil {
+		log.Printf("Ошибка создания файла для сохранения: %v", err)
+		return err
+	}
+	defer file.Close()
+
+	encoder := json.NewEncoder(file)
+	// encoder.SetIndent("", "  ") // Опционально: форматировать JSON
+	err = encoder.Encode(data)
+	if err != nil {
+		log.Printf("Ошибка кодирования JSON для сохранения: %v", err)
+		return err
+	}
+
+	log.Printf("Время успешно сохранено в файл.")
+	return nil
+}
+
+func readPhrasesFromFile(filename string) ([]string, error) {
+	log.Printf("Попытка чтения файла фраз: %s", filename)
+	file, err := os.Open(filename)
+	if err != nil {
 		log.Printf("Ошибка открытия файла фраз: %v", err)
 		return nil, err
 	}
@@ -68,7 +123,6 @@ func readPhrasesFromFile(filename string) ([]string, error) {
 	}
 
 	if err := scanner.Err(); err != nil {
-		// Логируем ошибку чтения
 		log.Printf("Ошибка чтения файла фраз: %v", err)
 		return nil, err
 	}
@@ -85,6 +139,27 @@ func getRandomPhrase(phrases []string) string {
 }
 
 func main() {
+	// --- Загрузка LastMention ---
+	LastMention, err := loadLastMentionFromFile(lastMentionFile)
+	// Если файл не найден (os.IsNotExist), инициализируем текущим временем
+	if err != nil {
+		if os.IsNotExist(err) {
+			LastMention = time.Now()
+			log.Printf("Файл с временем не найден, инициализация LastMention на текущее время: %v", LastMention)
+		} else {
+			// Если произошла другая ошибка (например, ошибка чтения/декодирования), логируем и используем текущее время
+			log.Printf("Ошибка загрузки времени из файла, используется текущее время: %v", err)
+			LastMention = time.Now()
+		}
+	} else {
+		// Убедимся, что загруженное время не в будущем (на всякий случай)
+		if LastMention.After(time.Now()) {
+			log.Printf("Загруженное время в будущем, устанавливаем на текущее время.")
+			LastMention = time.Now()
+		}
+	}
+	// --- Конец загрузки ---
+
 	bot, err := tgbotapi.NewBotAPI(config.Token)
 	if err != nil {
 		log.Panic(err)
@@ -104,8 +179,6 @@ func main() {
 		},
 	}
 
-	LastMention := time.Now()
-
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
@@ -121,9 +194,8 @@ func main() {
 			continue
 		}
 		messageText := update.Message.Text
-		command := update.Message.Command() // Сохраняем команду для логирования
+		command := update.Message.Command()
 
-		// Логируем полученную команду
 		if command != "" {
 			log.Printf("Получена команда: /%s от пользователя %d в чате %d", command, update.Message.From.ID, update.Message.Chat.ID)
 		}
@@ -196,7 +268,6 @@ func main() {
 			} else {
 				log.Println("User promoted successfully")
 			}
-		// --- НОВАЯ КОМАНДА /q ---
 		case cmdQuote:
 			log.Printf("Начата обработка команды /q для чата %d", update.Message.Chat.ID)
 
@@ -218,14 +289,13 @@ func main() {
 
 			escapedPhrase := escapeMarkdownV2(randomPhrase)
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, escapedPhrase)
-			msg.ParseMode = "MarkdownV2" // <-- Добавляем эту строку
+			msg.ParseMode = "MarkdownV2"
 			_, err = bot.Send(msg)
 			if err != nil {
 				log.Printf("Ошибка при отправке цитаты в команде /q: %v", err)
 			} else {
 				log.Printf("Цитата успешно отправлена в чат %d", update.Message.Chat.ID)
 			}
-		// --- КОНЕЦ НОВОЙ КОМАНДЫ ---
 		case cmdGPT:
 			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 			defer cancel()
@@ -284,21 +354,29 @@ func main() {
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, respUrl.Data[0].URL)
 			bot.Send(msg)
 		default:
-			// Логируем неизвестные команды (если они есть)
 			if command != "" {
 				log.Printf("Получена неизвестная команда: /%s", command)
 			}
 		}
 
+		// --- Проверка на "сосед" и обновление LastMention ---
 		if strings.Contains(strings.ToLower(messageText), substr) {
 			TimeDifference := time.Since(LastMention).Hours() / 24
 			Neib := strconv.Itoa(int(TimeDifference)) + " " + declOfNum(int(TimeDifference), titles) + " без соседей"
 			bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, Neib))
 			log.Println(TimeDifference)
-			log.Printf(LastMention.String())
+			log.Printf("Предыдущее LastMention: %v", LastMention)
 			LastMention = time.Now()
-			log.Printf(LastMention.String())
+			log.Printf("Новое LastMention: %v", LastMention)
+
+			// --- Сохранение LastMention ---
+			err := saveLastMentionToFile(lastMentionFile, LastMention)
+			if err != nil {
+				log.Printf("Ошибка сохранения времени в файл: %v", err)
+				// Важно: не отправляем сообщение пользователю об ошибке сохранения, так как это не его проблема
+			}
 		}
+		// --- Конец проверки ---
 	}
 }
 
