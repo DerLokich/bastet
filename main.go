@@ -2,16 +2,22 @@ package main
 
 import (
 	"BastetTetlegram/config"
+	"bufio"
 	"context"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/sashabaranov/go-openai"
 	"log"
+	"math/rand"
+	"os"
 	"strconv"
 	"strings"
 	"time"
 )
 
+var globalRand = rand.New(rand.NewSource(time.Now().UnixNano()))
+
 const substr = "сосед"
+const phrasesFile = "config/phrases.txt" // Путь к файлу с фразами
 
 const (
 	cmdMe      = "me"
@@ -20,6 +26,7 @@ const (
 	cmdImagine = "imagine"
 	cmdStart   = "start"
 	cmdHelp    = "help"
+	cmdQuote   = "q" // Новая команда
 )
 
 var (
@@ -34,6 +41,49 @@ func escapeMarkdownV2(text string) string {
 	return text
 }
 
+// readPhrasesFromFile читает фразы из файла
+func readPhrasesFromFile(filename string) ([]string, error) {
+	// Добавим логирование пути к файлу
+	log.Printf("Попытка чтения файла фраз: %s", filename)
+
+	file, err := os.Open(filename)
+	if err != nil {
+		// Логируем ошибку открытия файла
+		log.Printf("Ошибка открытия файла фраз: %v", err)
+		return nil, err
+	}
+	defer file.Close()
+
+	var phrases []string
+	scanner := bufio.NewScanner(file)
+	lineNumber := 0
+	for scanner.Scan() {
+		lineNumber++
+		phrase := strings.TrimSpace(scanner.Text())
+		if phrase != "" {
+			phrases = append(phrases, phrase)
+		} else {
+			log.Printf("Пропущена пустая строка в файле %s, строка %d", filename, lineNumber)
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		// Логируем ошибку чтения
+		log.Printf("Ошибка чтения файла фраз: %v", err)
+		return nil, err
+	}
+
+	log.Printf("Успешно прочитано %d фраз из файла %s", len(phrases), filename)
+	return phrases, nil
+}
+
+func getRandomPhrase(phrases []string) string {
+	if len(phrases) == 0 {
+		return "Фразы закончились :("
+	}
+	return phrases[globalRand.Intn(len(phrases))]
+}
+
 func main() {
 	bot, err := tgbotapi.NewBotAPI(config.Token)
 	if err != nil {
@@ -45,7 +95,7 @@ func main() {
 	client := openai.NewClient(config.GPTtoken)
 	req := openai.ChatCompletionRequest{
 		Temperature: 0.7,
-		Model:       openai.GPT4o, // Убедитесь, что константа поддерживается библиотекой
+		Model:       openai.GPT4o,
 		Messages: []openai.ChatCompletionMessage{
 			{
 				Role:    openai.ChatMessageRoleSystem,
@@ -71,7 +121,14 @@ func main() {
 			continue
 		}
 		messageText := update.Message.Text
-		switch update.Message.Command() {
+		command := update.Message.Command() // Сохраняем команду для логирования
+
+		// Логируем полученную команду
+		if command != "" {
+			log.Printf("Получена команда: /%s от пользователя %d в чате %d", command, update.Message.From.ID, update.Message.Chat.ID)
+		}
+
+		switch command {
 		case cmdMe:
 			time.Sleep(1 * time.Second)
 			deleteMsg := tgbotapi.DeleteMessageConfig{
@@ -106,7 +163,8 @@ func main() {
 			originalText := "Привет👋! Это свободная разработка. По вопросам обращайтесь к [разработчику бота](tg://user?id=435809098)  📬.\n" +
 				" Спасибо за вашу обратную связь😊!\n\nБазовые команды:\n" +
 				"- `/gpt` - Получите текстовые ответы на ваши вопросы с помощью *GPT4o*.\n" +
-				"- `/imagine` - Создайте изображения на основе вашего описания.\n"
+				"- `/imagine` - Создайте изображения на основе вашего описания.\n" +
+				"- `/q` - Получите случайную цитату.\n"
 			escapedText := escapeMarkdownV2(originalText)
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, escapedText)
 			msg.ParseMode = "MarkdownV2"
@@ -138,10 +196,40 @@ func main() {
 			} else {
 				log.Println("User promoted successfully")
 			}
+		// --- НОВАЯ КОМАНДА /q ---
+		case cmdQuote:
+			// Добавим логирование начала обработки команды
+			log.Printf("Начата обработка команды /q для чата %d", update.Message.Chat.ID)
+
+			phrases, err := readPhrasesFromFile(phrasesFile)
+			if err != nil {
+				log.Printf("Ошибка при чтении файла фраз в команде /q: %v", err)
+				// Отправляем сообщение пользователю о проблеме
+				bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Не удалось получить цитату. Файл фраз недоступен."))
+				continue // Прерываем выполнение текущего цикла для этой команды
+			}
+
+			if len(phrases) == 0 {
+				log.Printf("Файл фраз пуст в команде /q для чата %d", update.Message.Chat.ID)
+				bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Файл с цитатами пуст."))
+				continue
+			}
+
+			randomPhrase := getRandomPhrase(phrases)
+			log.Printf("Выбрана случайная фраза: '%s'", randomPhrase) // Логируем выбранную фразу
+
+			escapedPhrase := escapeMarkdownV2(randomPhrase)
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, escapedPhrase)
+			_, err = bot.Send(msg)
+			if err != nil {
+				log.Printf("Ошибка при отправке цитаты в команде /q: %v", err)
+			} else {
+				log.Printf("Цитата успешно отправлена в чат %d", update.Message.Chat.ID)
+			}
+		// --- КОНЕЦ НОВОЙ КОМАНДЫ ---
 		case cmdGPT:
-			// Создаем контекст с таймаутом для запроса к OpenAI
 			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-			defer cancel() // Важно отменить контекст, когда функция завершится
+			defer cancel()
 
 			req.Messages = append(req.Messages, openai.ChatCompletionMessage{
 				Role:    openai.ChatMessageRoleUser,
@@ -152,9 +240,9 @@ func main() {
 			if err != nil {
 				apiErr, ok := err.(*openai.APIError)
 				if ok && apiErr.HTTPStatusCode == 400 {
-					cancel() // Отменяем текущий контекст перед созданием нового
+					cancel()
 					req = openai.ChatCompletionRequest{
-						Model: openai.GPT4oMini, // Убедитесь, что константа поддерживается
+						Model: openai.GPT4oMini,
 						Messages: []openai.ChatCompletionMessage{
 							{
 								Role:    openai.ChatMessageRoleSystem,
@@ -167,33 +255,21 @@ func main() {
 					log.Printf("Ошибка 400 при вызове CreateChatCompletion: %v\n", errorDetails)
 					bot.Send(tgbotapi.NewMessage(435809098, errorDetails))
 				} else {
-					// Если ошибка не 400, обнуляем историю и отправляем сообщение
 					bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Я устала запоминать, обнуляюсь"))
 					log.Printf("Ошибка при вызове CreateChatCompletion: %v\n", err)
-					// Важно: при ошибке нужно сбросить req.Messages к начальному состоянию или очистить историю
-					// В противном случае история может остаться "испорченной"
-					// req.Messages = []openai.ChatCompletionMessage{
-					// 	{
-					// 		Role:    openai.ChatMessageRoleSystem,
-					// 		Content: "Temporary message for initialization", // или другое начальное сообщение
-					// 	},
-					// }
 				}
 				continue
 			}
-			// Отправляем ответ от GPT
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, resp.Choices[0].Message.Content)
 			bot.Send(msg)
-			// Добавляем ответ GPT в историю сообщений
 			req.Messages = append(req.Messages, resp.Choices[0].Message)
 
 		case cmdImagine:
-			// Создаем контекст с таймаутом для запроса к OpenAI (генерация изображения может занять время)
-			ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second) // 60 секунд - разумный таймаут для DALL-E
+			ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 			defer cancel()
 
 			respUrl, err := client.CreateImage(
-				ctx, // Передаем созданный контекст
+				ctx,
 				openai.ImageRequest{
 					Prompt:         update.Message.CommandArguments(),
 					Size:           openai.CreateImageSize512x512,
@@ -203,14 +279,16 @@ func main() {
 			)
 			if err != nil {
 				log.Printf("Image creation error: %v\n", err)
-				// Отправим сообщение об ошибке пользователю
 				bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Не удалось создать изображение. Пожалуйста, попробуйте позже."))
 				continue
 			}
-			// Отправляем URL изображения
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, respUrl.Data[0].URL)
 			bot.Send(msg)
 		default:
+			// Логируем неизвестные команды (если они есть)
+			if command != "" {
+				log.Printf("Получена неизвестная команда: /%s", command)
+			}
 		}
 
 		if strings.Contains(strings.ToLower(messageText), substr) {
