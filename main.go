@@ -259,6 +259,7 @@ func main() {
 				log.Printf("Failed to delete message: %v", err)
 			}
 		case cmdStart:
+			// originalText НЕ экранируется, так как содержит корректный MarkdownV2 для ссылки
 			originalText := "👋 *Привет! Я — твой универсальный помощник в мире искусственного интеллекта.*\n\n" +
 				"Я умею:\n" +
 				"🤖 Генерировать тексты с помощью *ChatGPT*.\n" +
@@ -271,22 +272,23 @@ func main() {
 				"   - \"/imagine Космический корабль в стиле киберпанк\"\n" +
 				"*Начнем? Просто напиши мне, что тебе нужно!*\n\n" +
 				"*P.S.* Если есть вопросы, используй команду `/help` 😊"
-			escapedText := escapeMarkdownV2(originalText)
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, escapedText)
+			// escapedText := escapeMarkdownV2(originalText) // <-- ЗАКОММЕНТИРОВАНО
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, originalText) // <-- ПЕРЕДАЕМ originalText
 			msg.ParseMode = "MarkdownV2"
 			_, err := bot.Send(msg)
 			if err != nil {
 				log.Printf("Ошибка при отправке сообщения: %v", err)
 			}
 		case cmdHelp:
+			// originalText НЕ экранируется, так как содержит корректный MarkdownV2 для ссылки
 			originalText := "Привет👋! Это свободная разработка. По вопросам обращайтесь к [разработчику бота](tg://user?id=435809098)  📬.\n" +
 				" Спасибо за вашу обратную связь😊!\n\nБазовые команды:\n" +
 				"- `/gpt` - Получите текстовые ответы на ваши вопросы с помощью *GPT4o*.\n" +
 				"- `/imagine` - Создайте изображения на основе вашего описания.\n" +
 				"- `/q` - Получите случайную цитату.\n" +
 				"- `/toast` - Получите случайный тост.\n"
-			escapedText := escapeMarkdownV2(originalText)
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, escapedText)
+			// escapedText := escapeMarkdownV2(originalText) // <-- ЗАКОММЕНТИРОВАНО
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, originalText) // <-- ПЕРЕДАЕМ originalText
 			msg.ParseMode = "MarkdownV2"
 			_, err := bot.Send(msg)
 			if err != nil {
