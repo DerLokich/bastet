@@ -4,32 +4,32 @@ package handlers
 import (
 	"log"
 
-	"BastetTetlegram/internal/files"
-	"BastetTetlegram/internal/services"
+	"BastetTetlegram/internal/files"    // Импортируем пакет files
+	"BastetTetlegram/internal/services" // Импортируем пакет services
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
+// ToastHandler - структура обработчика команды /toast
 type ToastHandler struct {
-	bot              *tgbotapi.BotAPI
-	config           interface{}                // Замените на реальный тип конфига, если нужно
-	fileService      *files.FileService         // Или передавайте напрямую функции ReadToastsFromFile
-	generatorService *services.GeneratorService // Или передавайте напрямую функции GetRandom...
+	bot *tgbotapi.BotAPI
+	// Конфигурация может быть передана сюда, если нужно
+	// config *config.Config
 }
 
-func NewToastHandler(bot *tgbotapi.BotAPI, config interface{}) *ToastHandler {
+// NewToastHandler - конструктор для ToastHandler
+func NewToastHandler(bot *tgbotapi.BotAPI /*, config *config.Config*/) *ToastHandler {
 	return &ToastHandler{
-		bot:    bot,
-		config: config, // Передайте реальный конфиг, если он нужен
+		bot: bot,
+		// config: config, // Если используется
 	}
 }
 
+// Handle - метод, обрабатывающий команду /toast
 func (h *ToastHandler) Handle(update tgbotapi.Update) {
 	log.Printf("Начата обработка команды /toast для чата %d", update.Message.Chat.ID)
 
-	// Предположим, у FileService есть метод ReadToastsFromFile
-	// toasts, err := h.fileService.ReadToastsFromFile(h.config.Files.ToastsFile)
-	// Или вызываем напрямую:
-	toasts, err := files.ReadToastsFromFile("config/toasts.txt") // Или получите путь из конфига
+	// Вызов ПАКЕТНОЙ функции из internal/files
+	toasts, err := files.ReadToastsFromFile("config/toasts.txt") // Или используйте путь из конфига
 	if err != nil {
 		log.Printf("Ошибка при чтении файла тостов в команде /toast: %v", err)
 		h.bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Не удалось получить тост. Файл тостов недоступен."))
@@ -37,17 +37,20 @@ func (h *ToastHandler) Handle(update tgbotapi.Update) {
 	}
 
 	if len(toasts) == 0 {
-		log.Printf("Файл тостов пуст в команде /toast для чата %д", update.Message.Chat.ID)
+		log.Printf("Файл тостов пуст в команде /toast для чата %d", update.Message.Chat.ID)
 		h.bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Файл с тостами пуст."))
 		return
 	}
 
+	// Вызов ПАКЕТНОЙ функции из internal/services
 	randomToast := services.GetRandomToast(toasts)
 	log.Printf("Выбран случайный тост: '%s'", randomToast)
 
+	// Вызов ПАКЕТНОЙ функции из internal/services
 	randomEmoji := services.GetRandomEmoji()
 	log.Printf("Выбрано случайное эмодзи: '%s'", randomEmoji)
 
+	// Вызов ПАКЕТНОЙ функции из internal/services
 	escapedToast := services.EscapeMarkdownV2(randomToast)
 	finalMessage := randomEmoji + " " + escapedToast + " " + randomEmoji
 
