@@ -13,13 +13,13 @@ import (
 	"BastetTetlegram/internal/files"
 	"BastetTetlegram/internal/services"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
-	"github.com/sashabaranov/go-openai"
+	// УДАЛЕН импорт "github.com/sashabaranov/go-openai" - он не используется в этом файле
 )
 
 type Bot struct {
 	tg     *tgbotapi.BotAPI
 	cfg    *config.Config
-	openai *services.OpenAIService
+	openai *services.OpenAIService // Храним экземпляр OpenAIService
 	// Добавьте другие сервисы, например, для управления сессиями
 }
 
@@ -74,31 +74,31 @@ func (b *Bot) Run() {
 			log.Printf("Получена команда: /%s от пользователя %d в чате %d", command, update.Message.From.ID, update.Message.Chat.ID)
 		}
 
-		// Регистрация обработчиков - вызываем конструкторы с ОДНИМ аргументом
+		// Регистрация обработчиков - вызываем конструкторы с нужными аргументами
 		switch command {
 		case "start":
-			handler := handlers_pkg.NewStartHandler(b.tg) // УБРАЛИ cfg
+			handler := handlers_pkg.NewStartHandler(b.tg)
 			handler.Handle(update)
 		case "help":
-			handler := handlers_pkg.NewHelpHandler(b.tg) // УБРАЛИ cfg
+			handler := handlers_pkg.NewHelpHandler(b.tg)
 			handler.Handle(update)
 		case "q":
-			handler := handlers_pkg.NewQuoteHandler(b.tg) // УБРАЛИ cfg
+			handler := handlers_pkg.NewQuoteHandler(b.tg)
 			handler.Handle(update)
 		case "toast":
-			handler := handlers_pkg.NewToastHandler(b.tg) // УБРАЛИ cfg
+			handler := handlers_pkg.NewToastHandler(b.tg)
 			handler.Handle(update)
 		case "gpt":
-			handler := handlers_pkg.NewGPTHandler(b.tg, b.openai) // cfg может быть нужен, если GPTHandler его использует
+			handler := handlers_pkg.NewGPTHandler(b.tg, b.openai) // Передаем b.openai
 			handler.Handle(update)
 		case "imagine":
-			handler := handlers_pkg.NewImagineHandler(b.tg, b.openai) // cfg может быть нужен, если ImagineHandler его использует
+			handler := handlers_pkg.NewImagineHandler(b.tg, b.openai) // Передаем b.openai
 			handler.Handle(update)
 		case "me":
-			handler := handlers_pkg.NewMeHandler(b.tg) // УБРАЛИ cfg
+			handler := handlers_pkg.NewMeHandler(b.tg)
 			handler.Handle(update)
 		case "iddqd":
-			handler := handlers_pkg.NewIDDQDHandler(b.tg) // cfg может быть нужен, если IDDQDHandler его использует
+			handler := handlers_pkg.NewIDDQDHandler(b.tg)
 			handler.Handle(update)
 		default:
 			// Логика для неизвестных команд или проверки "соседа"
