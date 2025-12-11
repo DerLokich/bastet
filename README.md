@@ -33,7 +33,7 @@
 
 4.  **Клонирование репозитория** 🧬:
     ```bash
-    git clone https://github.com/DerLokich/BastetTetlegram.git
+    git clone https://github.com/ВАШ_АККАУНТ/BastetTetlegram.git
     cd BastetTetlegram
     ```
 
@@ -67,35 +67,48 @@
 
 BastetTetlegram/
 ├── cmd/
-│ └── bot/
-│ └── main.go # Основная точка входа
+│   └── bot/
+│       └── main.go          # Основная точка входа
 ├── internal/
-│ ├── bot/ # Логика бота, обработчики команд
-│ │ ├── bot.go
-│ │ └── handlers/ # Обработчики команд
-│ │ ├── me.go
-│ │ ├── gpt.go
-│ │ ├── imagine.go
-│ │ ├── start.go
-│ │ ├── help.go
-│ │ ├── quote.go
-│ │ ├── toast.go
-│ │ └── iddqd.go
-│ ├── config/ # Конфигурация приложения
-│ │ ├── config.go
-│ │ └── load.go
-│ ├── files/ # Работа с файлами
-│ │ └── files.go
-│ ├── models/ # Структуры данных
-│ │ └── models.go
-│ └── services/ # Бизнес-логика (OpenAI, генераторы)
-│ ├── openai.go
-│ └── generator.go
-├── configs/ # Файлы конфигурации (yaml, env)
-├── config/ # Файлы с данными (phrases.txt, toasts.txt)
+│   ├── bot/                 # Логика бота, обработчики команд
+│   │   ├── bot.go
+│   │   └── handlers/        # Обработчики команд
+│   │       ├── me.go
+│   │       ├── gpt.go
+│   │       ├── imagine.go
+│   │       ├── start.go
+│   │       ├── help.go
+│   │       ├── quote.go
+│   │       ├── toast.go
+│   │       └── iddqd.go
+│   ├── config/              # Конфигурация приложения
+│   │   ├── config.go
+│   │   └── load.go
+│   ├── files/               # Работа с файлами
+│   │   └── files.go
+│   ├── models/              # Структуры данных
+│   │   └── models.go
+│   └── services/            # Бизнес-логика (OpenAI, генераторы)
+│       ├── openai.go
+│       └── generator.go
+├── configs/                 # Файлы конфигурации (yaml, env)
+├── config/                  # Файлы с данными (phrases.txt, toasts.txt)
 ├── go.mod
 ├── go.sum
 └── README.md
+
+Описание содержимого:
+
+cmd/bot/main.go: Точка входа в приложение. Загружает конфигурацию и запускает бота.
+internal/bot/bot.go: Основная логика бота, запуск цикла получения обновлений.
+internal/bot/handlers/: Пакеты, содержащие логику для каждой команды (/start, /help, /gpt и т.д.).
+internal/config/: Определение структуры конфигурации и логика её загрузки.
+internal/files/: Функции для чтения/записи файлов (цитаты, тосты, время).
+internal/models/: Структуры данных, используемые в приложении.
+internal/services/: Бизнес-логика, например, взаимодействие с OpenAI API, генерация случайных элементов.
+configs/: Место для файлов конфигурации приложения (например, config.yaml).
+config/: Место для файлов с данными, используемыми ботом (например, phrases.txt, toasts.txt).
+go.mod, go.sum: Файлы управления зависимостями Go.
 
 ## Зависимости 📚
 
