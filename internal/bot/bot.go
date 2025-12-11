@@ -8,18 +8,19 @@ import (
 	"strings"
 	"time"
 
-	handlers_pkg "BastetTetlegram/internal/bot/handlers" // Переименовали для избежания конфликта с builtin 'handlers'
+	handlers_pkg "BastetTetlegram/internal/bot/handlers" // Переименовали для избежания конфликта
 	"BastetTetlegram/internal/config"
 	"BastetTetlegram/internal/files"
 	"BastetTetlegram/internal/services"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"github.com/sashabaranov/go-openai"
 )
 
 type Bot struct {
 	tg     *tgbotapi.BotAPI
 	cfg    *config.Config
 	openai *services.OpenAIService
-	// Добавьте другие сервисы
+	// Добавьте другие сервисы, например, для управления сессиями
 }
 
 func New(cfg *config.Config) (*Bot, error) {
@@ -73,30 +74,37 @@ func (b *Bot) Run() {
 			log.Printf("Получена команда: /%s от пользователя %d в чате %d", command, update.Message.From.ID, update.Message.Chat.ID)
 		}
 
-		// Регистрация обработчиков
+		// Регистрация обработчиков - вызываем конструкторы с ОДНИМ аргументом
 		switch command {
 		case "start":
-			handler := handlers_pkg.NewStartHandler(b.tg, b.cfg)
+			handler := handlers_pkg.NewStartHandler(b.tg) // УБРАЛИ cfg
 			handler.Handle(update)
 		case "help":
-			handler := handlers_pkg.NewHelpHandler(b.tg, b.cfg)
+			handler := handlers_pkg.NewHelpHandler(b.tg) // УБРАЛИ cfg
 			handler.Handle(update)
 		case "q":
-			handler := handlers_pkg.NewQuoteHandler(b.tg, b.cfg)
+			handler := handlers_pkg.NewQuoteHandler(b.tg) // УБРАЛИ cfg
 			handler.Handle(update)
 		case "toast":
-			handler := handlers_pkg.NewToastHandler(b.tg, b.cfg)
+			handler := handlers_pkg.NewToastHandler(b.tg) // УБРАЛИ cfg
 			handler.Handle(update)
-		// case "gpt": ...
-		// case "imagine": ...
-		// case "me": ...
-		// case "iddqd": ...
+		case "gpt":
+			handler := handlers_pkg.NewGPTHandler(b.tg, b.openai) // cfg может быть нужен, если GPTHandler его использует
+			handler.Handle(update)
+		case "imagine":
+			handler := handlers_pkg.NewImagineHandler(b.tg, b.openai) // cfg может быть нужен, если ImagineHandler его использует
+			handler.Handle(update)
+		case "me":
+			handler := handlers_pkg.NewMeHandler(b.tg) // УБРАЛИ cfg
+			handler.Handle(update)
+		case "iddqd":
+			handler := handlers_pkg.NewIDDQDHandler(b.tg) // cfg может быть нужен, если IDDQDHandler его использует
+			handler.Handle(update)
 		default:
 			// Логика для неизвестных команд или проверки "соседа"
 		}
 
 		if strings.Contains(strings.ToLower(messageText), "сосед") {
-			// ... логика обновления LastMention и сохранения
 			TimeDifference := time.Since(LastMention).Hours() / 24
 			titles := []string{"день", "дня", "дней"}
 			Neib := strconv.Itoa(int(TimeDifference)) + " " + declOfNum(int(TimeDifference), titles) + " без соседей"
@@ -114,19 +122,22 @@ func (b *Bot) Run() {
 	}
 }
 
-// declOfNum нужно будет переместить или импортировать
+// declOfNum возвращает правильную форму существительного в зависимости от числа.
 func declOfNum(number int, titles []string) string {
 	if number < 0 {
 		number *= -1
 	}
-	cases := []string{2, 0, 1, 1, 1, 2}
+	// МАССИВ ЧИСЕЛ (int) для соответствия к каждому падежу
+	cases := []int{2, 0, 1, 1, 1, 2} // <-- ИСПРАВЛЕНО: []int
 	var currentCase int
+	// Проверяем условия для определения падежа
 	if number%100 > 4 && number%100 < 20 {
 		currentCase = 2
 	} else if number%10 < 5 {
-		currentCase = cases[number%10]
+		currentCase = cases[number%10] // <-- currentCase теперь int
 	} else {
-		currentCase = cases[5]
+		currentCase = cases[5] // <-- currentCase теперь int
 	}
-	return titles[currentCase]
+	// Возвращаем название соответствующего падежа из titles
+	return titles[currentCase] // <-- titles[currentCase] возвращает string
 }
